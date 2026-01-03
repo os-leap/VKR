@@ -28,8 +28,8 @@
 
     <!-- Панель фильтрации и поиска -->
     <div class="search-panel">
-      <form method="POST" action="{{ url_for('search_entry') }}">
-        <input type="text" name="query" placeholder="Поиск..." required>
+      <form method="GET" action="{{ url_for('search_entry_get') }}">
+        <input type="text" name="query" placeholder="Поиск..." value="{{ search_query or '' }}" required>
         <input type="hidden" name="topic" value="{{ selected_topic }}">
         <button type="submit">Искать</button>
       </form>

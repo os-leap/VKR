@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import threading
 from datetime import datetime
 import audit_system
@@ -136,6 +137,67 @@ def save_data(data):
             entry["author"] = "system"
     with open(DATA_FILE, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def syntax_aware_search(text, query):
+    """
+    Performs syntax-aware search supporting:
+    - AND operator: "word1 AND word2"
+    - OR operator: "word1 OR word2" 
+    - NOT operator: "word1 NOT word2"
+    - Phrase search: "word1 word2" (both words present)
+    - Quoted phrases: "\"exact phrase\""
+    """
+    # Normalize text and query to lowercase
+    text_lower = text.lower()
+    query = query.strip()
+    
+    # Handle quoted phrases first
+    quoted_phrases = re.findall(r'"([^"]*)"', query)
+    query_without_quotes = re.sub(r'"[^"]*"', '', query)
+    
+    # Check if all quoted phrases are present in the text
+    for phrase in quoted_phrases:
+        phrase = phrase.strip().lower()
+        if phrase and phrase not in text_lower:
+            return False
+    
+    # Process the remaining query without quotes
+    terms = query_without_quotes.strip()
+    if not terms:
+        return len(quoted_phrases) > 0  # If only quotes were provided, return True if they matched
+    
+    # Split by AND, OR, NOT operators while preserving them
+    parts = re.split(r'\s+(AND|OR|NOT)\s+', terms, flags=re.IGNORECASE)
+    
+    # Process parts with operators
+    i = 0
+    result = True  # Start with True for AND logic
+    operator = 'AND'  # Default operator
+    
+    while i < len(parts):
+        part = parts[i].strip()
+        
+        if part.upper() in ['AND', 'OR', 'NOT']:
+            operator = part.upper()
+        else:
+            term = part.strip().lower()
+            if term:
+                term_exists = term in text_lower
+                
+                if operator == 'AND':
+                    result = result and term_exists
+                elif operator == 'OR':
+                    if i == 0:  # First term, initialize result
+                        result = term_exists
+                    else:
+                        result = result or term_exists
+                elif operator == 'NOT':
+                    result = result and not term_exists
+        
+        i += 1
+    
+    return result
 
 
 
@@ -511,8 +573,20 @@ def uploaded_file(filename):
 
 @app.route("/search", methods=["POST"])
 def search_entry():
-    query = request.form.get("query", "").strip().lower()
+    query = request.form.get("query", "").strip()
     selected_topic = request.form.get("topic", "Все темы")
+
+    if not query:
+        return redirect(url_for("index"))
+
+    # Redirect to GET route to have clean URLs that can be shared
+    return redirect(url_for('search_entry_get', query=query, topic=selected_topic))
+
+
+@app.route("/search", methods=["GET"])
+def search_entry_get():
+    query = request.args.get("query", "").strip()
+    selected_topic = request.args.get("topic", "Все темы")
 
     if not query:
         return redirect(url_for("index"))
@@ -526,8 +600,11 @@ def search_entry():
             if entry.get("topic", "Без темы") != selected_topic:
                 continue
 
-        # Проверяем совпадение в заголовке или содержании
-        if query in entry["title"].lower() or query in entry["content"].lower():
+        # Используем синтаксически-осознанный поиск в заголовке и содержании
+        search_in_title = syntax_aware_search(entry["title"], query)
+        search_in_content = syntax_aware_search(entry["content"], query)
+        
+        if search_in_title or search_in_content:
             results.append(entry)
 
     # Получаем статистику по темам
