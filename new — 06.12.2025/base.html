@@ -1,0 +1,13 @@
+<!-- templates/base.html -->
+<div class="container">
+    {% if session.user %}
+        <div class="user-info">
+            Вход: {{ session.user.username }} ({{ session.user.role }})
+            <a href="{{ url_for('logout') }}" class="logout-btn">Выход</a>
+            {% if session.user.role == "admin" %}
+                <a href="{{ url_for('audit_log') }}" class="audit-btn">📊 Аудит</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</div>

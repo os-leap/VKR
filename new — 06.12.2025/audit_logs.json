@@ -1,0 +1,92 @@
+[
+    {
+        "timestamp": "2025-07-29T21:02:22.851845",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1"
+    },
+    {
+        "timestamp": "2025-07-29T21:02:22.874116",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1"
+    },
+    {
+        "timestamp": "2025-07-29T21:03:45.209861",
+        "username": "admin",
+        "action_type": "add",
+        "target": "я тут",
+        "details": "Добавлена новая запись"
+    },
+    {
+        "timestamp": "2025-07-29T21:04:48.933628",
+        "username": "admin",
+        "action_type": "add",
+        "target": "яыыы",
+        "details": "Добавлена новая запись"
+    },
+    {
+        "timestamp": "2025-07-30T14:40:27.167545",
+        "username": "admin",
+        "action_type": "add",
+        "target": "zxc",
+        "details": "Добавлена новая запись"
+    },
+    {
+        "timestamp": "2025-07-30T14:44:24.693022",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "1123123",
+        "details": "Изменение записи",
+        "old_value": "qweqewq",
+        "new_value": "qweqewq"
+    },
+    {
+        "timestamp": "2025-07-30T14:44:34.202551",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "1123123",
+        "details": "Изменение записи",
+        "old_value": "qweqewq",
+        "new_value": "qweqewq"
+    },
+    {
+        "timestamp": "2025-07-30T14:45:34.397811",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "1123123",
+        "details": "Изменение записи",
+        "old_value": "qweqewq",
+        "new_value": "qweqewq"
+    },
+    {
+        "timestamp": "2025-12-06T16:27:38.968452",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "1123123",
+        "details": "Удалена запись из базы знаний"
+    },
+    {
+        "timestamp": "2025-12-06T17:54:28.679385",
+        "username": "admin",
+        "action_type": "add",
+        "target": "расчетный лист",
+        "details": "Добавлена новая запись в теме 'Без темы' с файлом"
+    },
+    {
+        "timestamp": "2025-12-06T18:21:32.922153",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1"
+    },
+    {
+        "timestamp": "2025-12-06T18:21:32.958467",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1"
+    }
+]

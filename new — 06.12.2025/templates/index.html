@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Система управления знаниями</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Система управления знаниями</h1>
+
+    <!-- Панель пользователя -->
+    {% if session.user %}
+      <div class="user-info">
+        Вход: {{ session.user.username }} ({{ session.user.role }})
+        <a href="{{ url_for('logout') }}" class="logout-btn">Выход</a>
+
+        {% if session.user.role == "admin" %}
+          <a href="{{ url_for('sync_edsoo_route') }}" class="btn-sync">🔄 Проверить обновления</a>
+          <a href="{{ url_for('audit_log') }}" class="audit-btn">📊 Аудит</a>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="login-link">
+        <a href="{{ url_for('login') }}" class="login-btn">Войти</a>
+      </div>
+    {% endif %}
+
+    <!-- Панель фильтрации и поиска -->
+    <div class="search-panel">
+      <form method="POST" action="{{ url_for('search_entry') }}">
+        <input type="text" name="query" placeholder="Поиск..." required>
+        <input type="hidden" name="topic" value="{{ selected_topic }}">
+        <button type="submit">Искать</button>
+      </form>
+      <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
+    </div>
+
+    <!-- Панель фильтрации по темам -->
+    <div class="filter-panel">
+      <form method="GET" action="{{ url_for('index') }}">
+        <label for="topic">Фильтр по темам:</label>
+        <select name="topic" id="topic" onchange="this.form.submit()">
+          {% for topic in topics %}
+            <option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>
+              {{ topic }} {% if topic_stats and topic in topic_stats and topic != 'Все темы' %}({{ topic_stats[topic] }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    <!-- Список записей -->
+    {% if entries %}
+      <ul class="entries-list">
+        {% for entry in entries %}
+          <li class="entry-item">
+            <div class="entry-header">
+              <h2>{{ entry.title }}</h2>
+              <div class="entry-meta">
+                <span>Тема: {{ entry.topic }}</span>
+                <span>Создано: {{ format_date(entry.created_at) }}</span>
+                <span>Изменено: {{ format_date(entry.updated_at) }}</span>
+                <span>Автор: {{ entry.author }}</span>
+              </div>
+            </div>
+            <div class="entry-content">
+              <p>{{ entry.content[:200] }}{% if entry.content|length > 200 %}...{% endif %}</p>
+              {% if entry.file %}
+                <div class="entry-file">
+                  <span>📎 Файл: </span>
+                  <a href="{{ url_for('uploaded_file', filename=entry.file) }}" target="_blank">{{ entry.file }}</a>
+                </div>
+              {% endif %}
+            </div>
+            <div class="entry-actions">
+              <a href="{{ url_for('view_entry', index=loop.index0) }}" class="btn-view">Просмотр</a>
+              {% if session.user and (entry.author == session.user.username or session.user.role == "admin") %}
+                <a href="{{ url_for('edit_entry', index=loop.index0) }}" class="btn-edit">Редактировать</a>
+                <a href="{{ url_for('delete_entry', index=loop.index0) }}" class="btn-delete">Удалить</a>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="no-entries">Нет записей для отображения</p>
+    {% endif %}
+  </div>
+</body>
+</html>

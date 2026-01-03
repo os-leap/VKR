@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Добавить запись</h2>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('add_entry') }}">
+        <div class="form-group">
+            <label for="title">Заголовок:</label>
+            <input type="text" id="title" name="title" value="{{ entry.title if entry else '' }}" placeholder="Если не указан, будет сгенерирован автоматически">
+        </div>
+
+        <div class="form-group">
+            <label for="topic">Тема:</label>
+            <select id="topic" name="topic">
+                {% for topic in topics %}
+                    {% if topic != "Все темы" and topic != "Без темы" %}
+                        <option value="{{ topic }}">{{ topic }}</option>
+                    {% endif %}
+                {% endfor %}
+                <option value="Без темы">Без темы</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="content">Содержание:</label>
+            <textarea id="content" name="content" rows="15" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="file">Файл (PDF, Word, TXT):</label>
+            <input type="file" id="file" name="file">
+        </div>
+
+        <button type="submit" class="btn-submit">Добавить запись</button>
+    </form>
+    <a href="{{ url_for('index') }}" class="btn-back">Назад к списку</a>
+{% endblock %}
