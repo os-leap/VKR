@@ -16,9 +16,14 @@
         <a href="{{ url_for('logout') }}" class="logout-btn">Выход</a>
 
         {% if session.user.role == "admin" %}
-          <a href="{{ url_for('sync_edsoo_route') }}" class="btn-sync">🔄 Проверить обновления</a>
-          <a href="{{ url_for('audit_log') }}" class="audit-btn">📊 Аудит</a>
-          <a href="{{ url_for('manage_filters') }}" class="admin-btn">🔧 Редактировать фильтры</a>
+          <div class="admin-dropdown">
+            <button class="admin-btn dropdown-toggle">🔑 Админ-панель</button>
+            <div class="dropdown-content">
+              <a href="{{ url_for('sync_edsoo_route') }}" class="admin-tool">🔄 Проверить обновления</a>
+              <a href="{{ url_for('audit_log') }}" class="admin-tool">📋 Сбор событий</a>
+              <a href="{{ url_for('manage_filters') }}" class="admin-tool">🔧 Редактировать фильтры</a>
+            </div>
+          </div>
         {% endif %}
       </div>
     {% else %}
@@ -81,9 +86,9 @@
             </select>
           </div>
 
-          <div class="filter-group">
+          <div class="filter-group topic-selector">
             <label for="topic">Тема:</label>
-            <select name="topic" id="topic" onchange="this.form.submit()">
+            <select name="topic" id="topic" onchange="this.form.submit()" class="compact-topic-select">
               {% for topic in topics %}
               <option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>
                 {{ topic }} {% if topic_stats and topic in topic_stats and topic != 'Все темы' %}({{ topic_stats[topic] }}){% endif %}
@@ -165,5 +170,43 @@
       <p class="no-entries">Нет записей для отображения</p>
     {% endif %}
   </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownToggle = document.querySelector('.dropdown-toggle');
+      const dropdownContent = document.querySelector('.dropdown-content');
+      
+      dropdownToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdownContent.classList.toggle('show');
+        
+        // При закрытии меню убираем задержки анимации
+        if (!dropdownContent.classList.contains('show')) {
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach(tool => {
+            tool.style.animationDelay = '0s';
+          });
+        } else {
+          // При открытии меню добавляем задержки анимации для каждого элемента
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach((tool, index) => {
+            tool.style.animationDelay = (index * 0.05) + 's';
+          });
+        }
+      });
+      
+      // Закрытие меню при клике вне его области
+      document.addEventListener('click', function(e) {
+        if (!dropdownToggle.contains(e.target) && !dropdownContent.contains(e.target)) {
+          dropdownContent.classList.remove('show');
+          // Сбрасываем задержки анимации
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach(tool => {
+            tool.style.animationDelay = '0s';
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
