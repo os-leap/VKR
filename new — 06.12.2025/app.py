@@ -14,6 +14,7 @@ from data_utils import load_data
 from scheduler import background_job, start_scheduler
 from utils import extract_content_from_pdf, fetch_edsoo_documents, download_document, logger, sync_edsoo
 from Filter import FilterManager
+from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
 init_audit_system()
 
@@ -31,6 +32,7 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 ALLOWED_EXTENSIONS = {"pdf", "docx", "txt", "doc", "rtf"}
 
 filter_manager = FilterManager(DATA_FILE)
+advanced_filter_manager = AdvancedFilterManager(DATA_FILE, "filters.json")
 
 UPLOAD_FOLDER = "static/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -219,27 +221,87 @@ def allowed_file(filename):
 def index():
     if "user" not in session:
         return redirect(url_for("login"))
-    entries = load_data()
-    return render_template("index.html", entries=entries, format_date=format_date)
-
-    # Получаем выбранную тему из параметров запроса
-    selected_topic = request.args.get('topic', "Все темы")
-
-    # Фильтруем записи по теме
-    filtered_data = filter_manager.filter_by_topic(selected_topic)
-
+    
+    # Получаем параметры фильтрации из URL
+    selected_class = request.args.get('class', '')
+    selected_parallel = request.args.get('parallel', '')
+    selected_subject = request.args.get('subject', '')
+    selected_topic = request.args.get('topic', 'Все темы')
+    
+    # Фильтруем записи по всем параметрам
+    filtered_data = advanced_filter_manager.filter_entries(
+        selected_class=selected_class,
+        selected_parallel=selected_parallel,
+        selected_subject=selected_subject,
+        selected_topic=selected_topic
+    )
+    
+    # Получаем доступные фильтры
+    available_filters = advanced_filter_manager.get_available_filters()
+    
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
+    
+    # Получаем уникальные значения из существующих записей
+    unique_classes = advanced_filter_manager.get_unique_classes()
+    unique_parallels = advanced_filter_manager.get_unique_parallels()
+    unique_subjects = advanced_filter_manager.get_unique_subjects()
+    
+    return render_template(
+        "index.html",
+        entries=filtered_data,
+        format_date=format_date,
+        topics=filter_manager.get_unique_topics(),
+        selected_topic=selected_topic,
+        topic_stats=topic_stats,
+        available_classes=available_filters['classes'],
+        available_parallels=available_filters['parallels'],
+        available_subjects=available_filters['subjects'],
+        selected_class=selected_class,
+        selected_parallel=selected_parallel,
+        selected_subject=selected_subject,
+        unique_classes=unique_classes,
+        unique_parallels=unique_parallels,
+        unique_subjects=unique_subjects
+    )
 
-    # Передаем данные в шаблон
-    return render_template("index.html",
-                           entries=filtered_data,
-                           format_date=format_date,
-                           topics=filter_manager.get_unique_topics(),
-                           selected_topic=selected_topic,
-                           topic_stats=topic_stats)
 
+@app.route("/manage-filters", methods=["GET", "POST"])
+def manage_filters():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
 
+    if request.method == "POST":
+        action = request.form.get("action")
+        filter_type = request.form.get("filter_type")
+        filter_value = request.form.get("filter_value")
+
+        if action == "add" and filter_type and filter_value:
+            if filter_type == "class":
+                advanced_filter_manager.add_class(filter_value)
+            elif filter_type == "parallel":
+                advanced_filter_manager.add_parallel(filter_value)
+            elif filter_type == "subject":
+                advanced_filter_manager.add_subject(filter_value)
+
+        elif action == "remove" and filter_type and filter_value:
+            if filter_type == "class":
+                advanced_filter_manager.remove_class(filter_value)
+            elif filter_type == "parallel":
+                advanced_filter_manager.remove_parallel(filter_value)
+            elif filter_type == "subject":
+                advanced_filter_manager.remove_subject(filter_value)
+
+        return redirect(url_for("manage_filters"))
+
+    available_filters = advanced_filter_manager.get_available_filters()
+    return render_template(
+        "manage_filters.html",
+        classes=available_filters["classes"],
+        parallels=available_filters["parallels"],
+        subjects=available_filters["subjects"]
+    )
+    
 @app.context_processor
 def utility_processor():
     return {"format_date": format_date}
@@ -295,6 +357,9 @@ def add_entry():
         title = request.form.get("title", "").strip()
         content = request.form.get("content", "").strip()
         topic = request.form.get("topic", "Без темы").strip()
+        class_name = request.form.get("class", "").strip()
+        parallel = request.form.get("parallel", "").strip()
+        subject = request.form.get("subject", "").strip()
         file = request.files.get("file")
 
         # Валидация обязательных полей
@@ -340,6 +405,16 @@ def add_entry():
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
         }
+        
+        # Добавляем информацию об образовании, если она есть
+        if class_name or parallel or subject:
+            new_entry["education_info"] = {}
+            if class_name:
+                new_entry["education_info"]["class"] = class_name
+            if parallel:
+                new_entry["education_info"]["parallel"] = parallel
+            if subject:
+                new_entry["education_info"]["subject"] = subject
 
         # Сохраняем запись
         try:
@@ -348,6 +423,7 @@ def add_entry():
 
             # Обновляем данные в менеджере фильтрации
             filter_manager.data = data
+            advanced_filter_manager.data = data
 
             # Логируем действие
             log_action(
@@ -366,7 +442,14 @@ def add_entry():
             return "Ошибка при сохранении записи", 500
 
     # Для GET-запроса отображаем форму добавления
-    return render_template("add.html", topics=filter_manager.get_unique_topics())
+    available_filters = advanced_filter_manager.get_available_filters()
+    return render_template(
+        "add.html", 
+        topics=filter_manager.get_unique_topics(),
+        available_classes=available_filters["classes"],
+        available_parallels=available_filters["parallels"],
+        available_subjects=available_filters["subjects"]
+    )
 
 
 @app.route("/view/<int:index>")
