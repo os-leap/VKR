@@ -18,6 +18,7 @@
         {% if session.user.role == "admin" %}
           <a href="{{ url_for('sync_edsoo_route') }}" class="btn-sync">🔄 Проверить обновления</a>
           <a href="{{ url_for('audit_log') }}" class="audit-btn">📊 Аудит</a>
+          <a href="{{ url_for('manage_filters') }}" class="admin-btn">🔧 Редактировать фильтры</a>
         {% endif %}
       </div>
     {% else %}
@@ -31,23 +32,87 @@
       <form method="GET" action="{{ url_for('search_entry_get') }}">
         <input type="text" name="query" placeholder="Поиск..." value="{{ search_query or '' }}" required>
         <input type="hidden" name="topic" value="{{ selected_topic }}">
+        <input type="hidden" name="class" value="{{ selected_class }}">
+        <input type="hidden" name="parallel" value="{{ selected_parallel }}">
+        <input type="hidden" name="subject" value="{{ selected_subject }}">
         <button type="submit">Искать</button>
       </form>
       <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
     </div>
 
-    <!-- Панель фильтрации по темам -->
-    <div class="filter-panel">
+    <!-- Панель расширенной фильтрации -->
+    <div class="advanced-filter-panel">
+      <h3>Фильтры</h3>
       <form method="GET" action="{{ url_for('index') }}">
-        <label for="topic">Фильтр по темам:</label>
-        <select name="topic" id="topic" onchange="this.form.submit()">
-          {% for topic in topics %}
-            <option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>
-              {{ topic }} {% if topic_stats and topic in topic_stats and topic != 'Все темы' %}({{ topic_stats[topic] }}){% endif %}
-            </option>
-          {% endfor %}
-        </select>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="class">Класс:</label>
+            <select name="class" id="class" onchange="this.form.submit()">
+              <option value="">Все классы</option>
+              {% for class in available_classes %}
+              <option value="{{ class }}" {% if class == selected_class %}selected{% endif %}>
+                {{ class }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="parallel">Параллель:</label>
+            <select name="parallel" id="parallel" onchange="this.form.submit()">
+              <option value="">Все параллели</option>
+              {% for parallel in available_parallels %}
+              <option value="{{ parallel }}" {% if parallel == selected_parallel %}selected{% endif %}>
+                {{ parallel }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="subject">Предмет:</label>
+            <select name="subject" id="subject" onchange="this.form.submit()">
+              <option value="">Все предметы</option>
+              {% for subject in available_subjects %}
+              <option value="{{ subject }}" {% if subject == selected_subject %}selected{% endif %}>
+                {{ subject }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="topic">Тема:</label>
+            <select name="topic" id="topic" onchange="this.form.submit()">
+              {% for topic in topics %}
+              <option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>
+                {{ topic }} {% if topic_stats and topic in topic_stats and topic != 'Все темы' %}({{ topic_stats[topic] }}){% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
       </form>
+    </div>
+
+    <!-- Отображение активных фильтров -->
+    <div class="active-filters">
+      <strong>Активные фильтры:</strong>
+      {% if selected_class %}
+        <span class="filter-badge">Класс: {{ selected_class }} <a href="{{ url_for('index', parallel=selected_parallel, subject=selected_subject, topic=selected_topic) }}">×</a></span>
+      {% endif %}
+      {% if selected_parallel %}
+        <span class="filter-badge">Параллель: {{ selected_parallel }} <a href="{{ url_for('index', class=selected_class, subject=selected_subject, topic=selected_topic) }}">×</a></span>
+      {% endif %}
+      {% if selected_subject %}
+        <span class="filter-badge">Предмет: {{ selected_subject }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, topic=selected_topic) }}">×</a></span>
+      {% endif %}
+      {% if selected_topic and selected_topic != 'Все темы' %}
+        <span class="filter-badge">Тема: {{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject) }}">×</a></span>
+      {% endif %}
+      {% if selected_class or selected_parallel or selected_subject or (selected_topic and selected_topic != 'Все темы') %}
+        <a href="{{ url_for('index') }}" class="clear-filters-btn">Очистить все фильтры</a>
+      {% endif %}
     </div>
 
     <!-- Список записей -->
@@ -58,6 +123,19 @@
             <div class="entry-header">
               <h2>{{ entry.title }}</h2>
               <div class="entry-meta">
+                <!-- Информация об образовательных фильтрах -->
+                {% if entry.education_info %}
+                  {% if entry.education_info.class %}
+                    <span>Класс: {{ entry.education_info.class }}</span>
+                  {% endif %}
+                  {% if entry.education_info.parallel %}
+                    <span>Параллель: {{ entry.education_info.parallel }}</span>
+                  {% endif %}
+                  {% if entry.education_info.subject %}
+                    <span>Предмет: {{ entry.education_info.subject }}</span>
+                  {% endif %}
+                {% endif %}
+                
                 <span>Тема: {{ entry.topic }}</span>
                 <span>Создано: {{ format_date(entry.created_at) }}</span>
                 <span>Изменено: {{ format_date(entry.updated_at) }}</span>

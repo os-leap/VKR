@@ -8,6 +8,38 @@
             <input type="text" id="title" name="title" value="{{ entry.title if entry else '' }}" placeholder="Если не указан, будет сгенерирован автоматически">
         </div>
 
+        <div class="form-row">
+            <div class="form-group">
+                <label for="class">Класс:</label>
+                <select id="class" name="class">
+                    <option value="">Не указан</option>
+                    {% for class in available_classes %}
+                        <option value="{{ class }}">{{ class }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="parallel">Параллель:</label>
+                <select id="parallel" name="parallel">
+                    <option value="">Не указана</option>
+                    {% for parallel in available_parallels %}
+                        <option value="{{ parallel }}">{{ parallel }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Предмет:</label>
+                <select id="subject" name="subject">
+                    <option value="">Не указан</option>
+                    {% for subject in available_subjects %}
+                        <option value="{{ subject }}">{{ subject }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="topic">Тема:</label>
             <select id="topic" name="topic">
