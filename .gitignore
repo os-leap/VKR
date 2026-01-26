@@ -1,58 +1,31 @@
 ```
-# Python
+# Database
+recommendations.db
+
+# Compiled Python files
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Virtual environments
-venv/
-env/
-ENV/
+# Dependencies
 .venv/
-.env/
+venv/
+node_modules/
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
+# Logs and temp files
+*.log
 *.tmp
 
-# Logs
-*.log
-
-# Coverage reports
-.coverage
-coverage/
-htmlcov/
-
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Editors
+.vscode/
+.idea/
 
-# Uploads directory (if it contains temporary files)
-new_app/static/uploads/*.tmp
-new_app/static/uploads/*.temp
+# Build artifacts
+dist/
+build/
+target/
 ```
