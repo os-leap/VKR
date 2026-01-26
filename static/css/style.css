@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+.topic-selector {
+    margin-bottom: 20px;
+}
+
+select.compact-topic-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    outline: none;
+    cursor: pointer;
+}
+
+select.compact-topic-select:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+select.compact-topic-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+}
+
+.recommendations-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.recommendations-section h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.recommendation-category {
+    margin-bottom: 20px;
+}
+
+.recommendation-category h3 {
+    color: #495057;
+    font-size: 18px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 5px;
+}
+
+.recommendation-item {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 12px;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.frequency-badge {
+    background-color: #007bff;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    margin-left: 5px;
+    display: inline-block;
+}
+
+.recommendation-item:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.recommendation-item:hover .frequency-badge {
+    background-color: white;
+    color: #007bff;
+}
+
+.no-recommendations {
+    color: #6c757d;
+    font-style: italic;
+}

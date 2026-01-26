@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Образовательная платформа</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Образовательная платформа</h1>
+        
+        <div class="topic-selector">
+            <label for="topicSelect">Выберите тему:</label>
+            <select id="topicSelect" class="compact-topic-select" onchange="onTopicChange()">
+                <option value="">-- Выберите тему --</option>
+                <option value="math_algebra">Алгебра</option>
+                <option value="math_geometry">Геометрия</option>
+                <option value="physics_mechanics">Физика: Механика</option>
+                <option value="chemistry_basic">Химия: Основы</option>
+            </select>
+        </div>
+        
+        <div class="recommendations-section">
+            <h2>Вам может быть интересно</h2>
+            
+            <div class="recommendation-category">
+                <h3>Часто изучаемые темы</h3>
+                <div id="frequent-topics">
+                    <span class="no-recommendations">Загрузка рекомендаций...</span>
+                </div>
+            </div>
+            
+            <div class="recommendation-category">
+                <h3>Популярные разделы</h3>
+                <div id="frequent-sections">
+                    <span class="no-recommendations">Загрузка рекомендаций...</span>
+                </div>
+            </div>
+            
+            <div class="recommendation-category">
+                <h3>Полезные записи</h3>
+                <div id="frequent-records">
+                    <span class="no-recommendations">Загрузка рекомендаций...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Имитация идентификатора пользователя
+        const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        
+        // Функция загрузки рекомендаций
+        async function loadRecommendations() {
+            try {
+                const response = await fetch(`/api/recommendations?user_id=${userId}`);
+                const data = await response.json();
+                
+                if (data.recommendations) {
+                    updateRecommendationDisplay(data.recommendations);
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке рекомендаций:', error);
+                document.getElementById('frequent-topics').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендации</span>';
+                document.getElementById('frequent-sections').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендаций</span>';
+                document.getElementById('frequent-records').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендаций</span>';
+            }
+        }
+        
+        // Функция обновления отображения рекомендаций
+        function updateRecommendationDisplay(recommendations) {
+            // Обновление часто изучаемых тем
+            const topicsDiv = document.getElementById('frequent-topics');
+            if (recommendations.topic && recommendations.topic.length > 0) {
+                topicsDiv.innerHTML = '';
+                recommendations.topic.forEach(item => {
+                    const topicElement = document.createElement('span');
+                    topicElement.className = 'recommendation-item';
+                    topicElement.title = `Запрошено ${item.frequency} раз`;
+                    topicElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
+                    topicElement.onclick = () => selectTopic(item.item_id);
+                    topicsDiv.appendChild(topicElement);
+                });
+            } else {
+                topicsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
+            }
+            
+            // Обновление популярных разделов
+            const sectionsDiv = document.getElementById('frequent-sections');
+            if (recommendations.section && recommendations.section.length > 0) {
+                sectionsDiv.innerHTML = '';
+                recommendations.section.forEach(item => {
+                    const sectionElement = document.createElement('span');
+                    sectionElement.className = 'recommendation-item';
+                    sectionElement.title = `Запрошено ${item.frequency} раз`;
+                    sectionElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
+                    sectionElement.onclick = () => selectSection(item.item_id);
+                    sectionsDiv.appendChild(sectionElement);
+                });
+            } else {
+                sectionsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
+            }
+            
+            // Обновление полезных записей
+            const recordsDiv = document.getElementById('frequent-records');
+            if (recommendations.record && recommendations.record.length > 0) {
+                recordsDiv.innerHTML = '';
+                recommendations.record.forEach(item => {
+                    const recordElement = document.createElement('span');
+                    recordElement.className = 'recommendation-item';
+                    recordElement.title = `Запрошено ${item.frequency} раз`;
+                    recordElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
+                    recordElement.onclick = () => selectRecord(item.item_id);
+                    recordsDiv.appendChild(recordElement);
+                });
+            } else {
+                recordsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
+            }
+        }
+        
+        // Функция для выбора темы
+        function selectTopic(topicId) {
+            document.getElementById('topicSelect').value = topicId;
+            onTopicChange();
+        }
+        
+        // Функция для выбора раздела
+        function selectSection(sectionId) {
+            console.log('Выбран раздел:', sectionId);
+            // Здесь можно добавить логику для отображения раздела
+        }
+        
+        // Функция для выбора записи
+        function selectRecord(recordId) {
+            console.log('Выбрана запись:', recordId);
+            // Здесь можно добавить логику для отображения записи
+        }
+        
+        // Функция вызывается при изменении темы
+        function onTopicChange() {
+            const selectedValue = document.getElementById('topicSelect').value;
+            if (selectedValue) {
+                logRequest(userId, 'topic', selectedValue);
+            }
+        }
+        
+        // Функция для логирования запроса пользователя
+        async function logRequest(userId, itemType, itemId) {
+            try {
+                await fetch('/api/log_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        item_type: itemType,
+                        item_id: itemId
+                    })
+                });
+            } catch (error) {
+                console.error('Ошибка при логировании запроса:', error);
+            }
+        }
+        
+        // Загрузка рекомендаций при загрузке страницы
+        window.onload = function() {
+            loadRecommendations();
+        };
+    </script>
+</body>
+</html>
