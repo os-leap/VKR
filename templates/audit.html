@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Аудит действий</h2>
+
+    <!-- Форма фильтрации -->
+    <div class="audit-filters">
+        <form method="GET" action="{{ url_for('audit_log') }}" class="filter-form">
+            <div class="filter-group">
+                <label for="query">Поиск:</label>
+                <input type="text" id="query" name="query" value="{{ request.args.get('query', '') }}">
+            </div>
+            <div class="filter-group">
+                <label for="type">Тип действия:</label>
+                <select id="type" name="type">
+                    <option value="">Все</option>
+                    <option value="add" {% if request.args.get('type') == 'add' %}selected{% endif %}>Добавление</option>
+                    <option value="edit" {% if request.args.get('type') == 'edit' %}selected{% endif %}>Редактирование</option>
+                    <option value="delete" {% if request.args.get('type') == 'delete' %}selected{% endif %}>Удаление</option>
+                    <option value="sync" {% if request.args.get('type') == 'sync' %}selected{% endif %}>Синхронизация</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="user">Пользователь:</label>
+                <input type="text" id="user" name="user" value="{{ request.args.get('user', '') }}">
+            </div>
+            <button type="submit" class="btn-filter">Применить</button>
+        </form>
+    </div>
+
+    <!-- Статистика -->
+    {% if report %}
+    <div class="audit-report">
+        <h3>Статистика</h3>
+        <p>Всего действий: {{ report.total_actions }}</p>
+        <p>Действия по типам:
+            {% for action_type, count in report.actions_by_type.items() %}
+                {{ action_type }}: {{ count }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p>Действия по пользователям:
+            {% for user, count in report.actions_by_user.items() %}
+                {{ user }}: {{ count }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        {% if report.most_active_entry %}
+        <p>Самая активная запись: {{ report.most_active_entry }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Таблица логов -->
+    <table class="audit-table">
+        <thead>
+            <tr>
+                <th>Дата и время</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Цель</th>
+                <th>Детали</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ format_date(log.timestamp) }}</td>
+                <td>{{ log.username }}</td>
+                <td>
+                    {% if log.action_type == 'add' %}Добавление
+                    {% elif log.action_type == 'edit' %}Редактирование
+                    {% elif log.action_type == 'delete' %}Удаление
+                    {% elif log.action_type == 'sync' %}Синхронизация
+                    {% else %}{{ log.action_type | capitalize }}
+                    {% endif %}
+                </td>
+                <td>{{ log.target }}</td>
+                <td>
+                    {{ log.details }}
+                    {% if log.action_type == 'edit' and log.old_value and log.new_value %}
+                    <div class="edit-details">
+                        <div class="old-value">Старое: {{ log.old_value }}</div>
+                        <div class="new-value">Новое: {{ log.new_value }}</div>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="no-logs">Нет записей аудита</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('index') }}" class="btn-back">Назад к базе знаний</a>
+{% endblock %}
