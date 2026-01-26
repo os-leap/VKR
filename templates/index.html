@@ -76,7 +76,8 @@
                 recommendations.topic.forEach(item => {
                     const topicElement = document.createElement('span');
                     topicElement.className = 'recommendation-item';
-                    topicElement.textContent = item.item_id.replace(/_/g, ' ');
+                    topicElement.title = `Запрошено ${item.frequency} раз`;
+                    topicElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
                     topicElement.onclick = () => selectTopic(item.item_id);
                     topicsDiv.appendChild(topicElement);
                 });
@@ -91,7 +92,8 @@
                 recommendations.section.forEach(item => {
                     const sectionElement = document.createElement('span');
                     sectionElement.className = 'recommendation-item';
-                    sectionElement.textContent = item.item_id.replace(/_/g, ' ');
+                    sectionElement.title = `Запрошено ${item.frequency} раз`;
+                    sectionElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
                     sectionElement.onclick = () => selectSection(item.item_id);
                     sectionsDiv.appendChild(sectionElement);
                 });
@@ -106,7 +108,8 @@
                 recommendations.record.forEach(item => {
                     const recordElement = document.createElement('span');
                     recordElement.className = 'recommendation-item';
-                    recordElement.textContent = item.item_id.replace(/_/g, ' ');
+                    recordElement.title = `Запрошено ${item.frequency} раз`;
+                    recordElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
                     recordElement.onclick = () => selectRecord(item.item_id);
                     recordsDiv.appendChild(recordElement);
                 });
