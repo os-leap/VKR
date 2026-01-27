@@ -40,6 +40,10 @@
         <input type="hidden" name="class" value="{{ selected_class }}">
         <input type="hidden" name="parallel" value="{{ selected_parallel }}">
         <input type="hidden" name="subject" value="{{ selected_subject }}">
+        <select name="search_type" class="search-type-select">
+          <option value="syntax" {% if search_type == 'syntax' or not search_type %}selected{% endif %}>Синтаксический поиск</option>
+          <option value="semantic" {% if search_type == 'semantic' %}selected{% endif %}>Семантический поиск</option>
+        </select>
         <button type="submit">Искать</button>
       </form>
       <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>

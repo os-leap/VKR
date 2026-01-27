@@ -16,6 +16,7 @@ from utils import extract_content_from_pdf, fetch_edsoo_documents, download_docu
 from Filter import FilterManager
 from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
+from simple_semantic_search_integration import initialize_search_system, perform_integrated_search
 init_audit_system()
 
 
@@ -130,6 +131,13 @@ def load_data():
                 # Добавляем поле topic, если его нет
                 if "topic" not in entry or entry["topic"] is None:
                     entry["topic"] = "Без темы"
+            
+            # Инициализируем систему семантического поиска с новыми данными
+            try:
+                initialize_search_system(data)
+            except Exception as e:
+                print(f"[ERROR] Не удалось инициализировать систему семантического поиска: {e}")
+            
             return data
     return []
 
@@ -589,44 +597,52 @@ def uploaded_file(filename):
 def search_entry():
     query = request.form.get("query", "").strip()
     selected_topic = request.form.get("topic", "Все темы")
+    search_type = request.form.get("search_type", "syntax")  # Получаем тип поиска из формы
 
     if not query:
         return redirect(url_for("index"))
 
     # Redirect to GET route to have clean URLs that can be shared
-    return redirect(url_for('search_entry_get', query=query, topic=selected_topic))
+    return redirect(url_for('search_entry_get', query=query, topic=selected_topic, search_type=search_type))
 
 
 @app.route("/search", methods=["GET"])
 def search_entry_get():
     query = request.args.get("query", "").strip()
     selected_topic = request.args.get("topic", "Все темы")
+    search_type = request.args.get("search_type", "syntax")  # Добавляем параметр типа поиска
 
     if not query:
         return redirect(url_for("index"))
 
+    # Загружаем данные (это также инициализирует систему семантического поиска)
     data = load_data()
-    results = []
 
-    for entry in data:
-        # Фильтруем по теме, если выбрана конкретная тема
-        if selected_topic != "Все темы" and selected_topic:
-            if entry.get("topic", "Без темы") != selected_topic:
-                continue
+    if search_type == "semantic":
+        # Используем семантический поиск
+        results = perform_integrated_search(query, search_type="semantic", top_k=20)
+    else:
+        # Используем синтаксический поиск
+        results = []
+        for entry in data:
+            # Фильтруем по теме, если выбрана конкретная тема
+            if selected_topic != "Все темы" and selected_topic:
+                if entry.get("topic", "Без темы") != selected_topic:
+                    continue
 
-        # Используем синтаксически-осознанный поиск в заголовке и содержании
-        search_in_title = syntax_aware_search(entry["title"], query)
-        search_in_content = syntax_aware_search(entry["content"], query)
-        
-        if search_in_title or search_in_content:
-            results.append(entry)
+            # Используем синтаксически-осознанный поиск в заголовке и содержании
+            search_in_title = syntax_aware_search(entry["title"], query)
+            search_in_content = syntax_aware_search(entry["content"], query)
+
+            if search_in_title or search_in_content:
+                results.append(entry)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
 
-    return render_template("index.html", entries=results, is_search=True,format_date=format_date,query=query,
+    return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
-                           search_query=query, topic_stats=topic_stats)
+                           search_query=query, topic_stats=topic_stats, search_type=search_type)
 
 
 def generate_title_from_content(content):
