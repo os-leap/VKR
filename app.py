@@ -786,6 +786,83 @@ def delete_entry_by_id(entry_id):
     return redirect(url_for("index"))
 
 
+@app.route("/manage-users", methods=["GET", "POST"])
+def manage_users():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        username = request.form.get("username")
+
+        users = load_users()
+
+        if action == "add":
+            new_username = request.form.get("username")
+            password = request.form.get("password")
+            role = request.form.get("role")
+
+            # Проверяем, существует ли уже пользователь с таким именем
+            if any(user["username"] == new_username for user in users):
+                # Возвращаем на страницу с сообщением об ошибке
+                users = load_users()
+                return render_template("manage_users.html", users=users, error="Пользователь с таким именем уже существует")
+            else:
+                hashed_password = hash_password(password)
+                new_user = {
+                    "username": new_username,
+                    "password_hash": hashed_password,
+                    "role": role
+                }
+                users.append(new_user)
+                
+                # Логируем действие
+                log_action(
+                    username=session["user"]["username"],
+                    action_type="add_user",
+                    target=new_username,
+                    details=f"Создан пользователь с ролью {role}"
+                )
+
+        elif action == "update_role":
+            role = request.form.get("role")
+            for user in users:
+                if user["username"] == username:
+                    old_role = user["role"]
+                    user["role"] = role
+                    
+                    # Логируем изменение роли
+                    log_action(
+                        username=session["user"]["username"],
+                        action_type="update_user_role",
+                        target=username,
+                        details=f"Изменена роль с {old_role} на {role}"
+                    )
+                    break
+
+        elif action == "delete":
+            # Не позволяем администратору удалить самого себя
+            if username == session["user"]["username"]:
+                return "Нельзя удалить самого себя", 400
+            
+            users = [user for user in users if user["username"] != username]
+            
+            # Логируем удаление пользователя
+            log_action(
+                username=session["user"]["username"],
+                action_type="delete_user",
+                target=username,
+                details="Пользователь удален из системы"
+            )
+
+        # Сохраняем обновленный список пользователей
+        with open(USERS_FILE, "w") as f:
+            json.dump(users, f)
+
+    users = load_users()
+    return render_template("manage_users.html", users=users)
+
+
 def start_background_tasks():
     schedule.every().monday.at("00:00").do(sync_edsoo)
     thread = threading.Thread(target=background_job, daemon=True)

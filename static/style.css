@@ -370,6 +370,7 @@ li {
 .dropdown-content.show .admin-tool:nth-child(1) { animation-delay: 0.1s; }
 .dropdown-content.show .admin-tool:nth-child(2) { animation-delay: 0.15s; }
 .dropdown-content.show .admin-tool:nth-child(3) { animation-delay: 0.2s; }
+.dropdown-content.show .admin-tool:nth-child(4) { animation-delay: 0.25s; }
 
 @keyframes slideInFromLeft {
     from {
@@ -380,4 +381,144 @@ li {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Стили для страницы управления пользователями */
+.user-form-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-form-section h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #495057;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.btn-add-user {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-user:hover {
+    background-color: #218838;
+}
+
+.users-table-section {
+    margin-bottom: 30px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.users-table th {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+}
+
+.users-table tr:last-child td {
+    border-bottom: none;
+}
+
+.users-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.role-change-btn,
+.btn-delete-user {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 2px;
+}
+
+.role-change-btn {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.role-change-btn:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete-user {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete-user:hover {
+    background-color: #c82333;
+}
+
+.no-users {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+
+.back-link {
+    margin-top: 20px;
+}
+
+/* Стили для сообщений об ошибках */
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
 }
