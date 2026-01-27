@@ -2,7 +2,7 @@
 
 {% block content %}
     <h2>Редактировать запись</h2>
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_entry', index=index) }}">
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_entry_by_id', entry_id=entry.id) }}">
         <div class="form-group">
             <label for="title">Заголовок:</label>
             <input type="text" id="title" name="title" value="{{ entry.title }}" required>

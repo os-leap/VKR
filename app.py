@@ -518,76 +518,11 @@ def edit_entry(index):
 
         save_data(data)
 
+        # Обновляем данные в менеджере фильтрации
+        filter_manager.data = data
+        advanced_filter_manager.data = data
 
         # Запись в аудит
-        log_action(
-            username=session["user"]["username"],
-            action_type="edit",
-            target=old_title,
-            details=f"Изменение записи",
-            old_value=old_content[:100] + "..." if len(old_content) > 100 else old_content,
-            new_value=new_content[:100] + "..." if len(new_content) > 100 else new_content
-        )
-        ilter_manager.data = data
-        return redirect(url_for("index"))
-        return redirect(url_for("index"))
-
-    return render_template("edit.html", entry=entry, index=index, topics=filter_manager.get_unique_topics())
-
-    data = load_data()
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                for entry in data:
-                    if "created_at" not in entry:
-                        entry["created_at"] = datetime.now().isoformat()
-                    if "updated_at" not in entry:
-                        entry["updated_at"] = entry["created_at"]
-                    # Добавляем автора по умолчанию, если его нет
-                    if "author" not in entry:
-                        entry["author"] = "system"
-                return data
-        except json.JSONDecodeError:
-            return []
-    return []
-
-    entry = data[index]
-
-    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin":
-        return "Нет прав", 403
-
-    if request.method == "POST":
-        new_title = request.form.get("title", "").strip()
-        new_content = request.form.get("content", "").strip()
-        file = request.files.get("file")
-
-        # Генерация заголовка при редактировании
-        if not new_title:
-            new_title = generate_title_from_content(new_content)
-
-        if not new_title or not new_content:
-            return "Заголовок и содержание не могут быть пустыми", 400
-
-        if any(e["title"] == new_title and e != entry for e in data):
-            return "Дубликат заголовка", 400
-
-        entry["title"] = new_title
-        entry["content"] = new_content
-        entry["updated_at"] = datetime.now().isoformat()
-
-        # Обработка файла
-        if file and allowed_file(file.filename):
-            old_file = entry.get("file")
-            if old_file:
-                old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            entry["file"] = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], entry["file"]))
-
-        save_data(data)
-
         log_action(
             username=session["user"]["username"],
             action_type="edit",
@@ -599,7 +534,7 @@ def edit_entry(index):
         
         return redirect(url_for("index"))
 
-    return render_template("edit.html", entry=entry, index=index)
+    return render_template("edit.html", entry=entry, index=index, entry_id=entry.get('id'), topics=filter_manager.get_unique_topics())
 
 
 @app.route("/delete/<int:index>")
@@ -626,10 +561,6 @@ def delete_entry(index):
         old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
         if os.path.exists(old_path):
             os.remove(old_path)
-    del data[index]
-    save_data(data)
-    return redirect(url_for("index"))
-
     del data[index]
     save_data(data)
     return redirect(url_for("index"))
@@ -710,6 +641,135 @@ def generate_title_from_content(content):
 
 
 
+def find_entry_index_by_id(data, entry_id):
+    """Находит индекс записи по её ID"""
+    for i, entry in enumerate(data):
+        if entry.get("id") == entry_id:
+            return i
+    return None
+
+
+def find_entry_by_id(data, entry_id):
+    """Находит запись по её ID"""
+    for entry in data:
+        if entry.get("id") == entry_id:
+            return entry
+    return None
+
+
+@app.route("/view/id/<entry_id>")
+def view_entry_by_id(entry_id):
+    data = load_data()
+    entry = find_entry_by_id(data, entry_id)
+    if not entry:
+        return "Запись не найдена", 404
+    return render_template("view.html", entry=entry, format_date=format_date)
+
+
+@app.route("/edit/id/<entry_id>", methods=["GET", "POST"])
+def edit_entry_by_id(entry_id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+    data = load_data()
+    entry = find_entry_by_id(data, entry_id)
+    if not entry:
+        return "Запись не найдена", 404
+
+    # Проверяем наличие автора, если его нет — устанавливаем значение по умолчанию
+    entry_author = entry.get("author", "system")
+
+    # Проверка прав доступа
+    if entry_author != session["user"]["username"] and session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+
+    if request.method == "POST":
+        new_title = request.form.get("title", "").strip()
+        new_topic = request.form.get("topic", "Без темы").strip()
+        new_content = request.form.get("content", "").strip()
+        file = request.files.get("file")
+
+        # Генерация заголовка, если он пустой
+        if not new_title:
+            new_title = generate_title_from_content(new_content)
+
+        if not new_title or not new_content:
+            return "Поля не могут быть пустыми", 400
+
+        # Проверка на дубликаты (кроме текущей записи)
+        if any(e["title"] == new_title and e.get("id") != entry_id for e in data):
+            return "Дубликат заголовка", 400
+
+        # Сохраняем старые значения для аудита
+        old_title = entry["title"]
+        old_topic = entry["topic"]
+        old_content = entry["content"]
+
+        # Обновляем запись
+        entry["title"] = new_title
+        entry["topic"] = new_topic
+        entry["content"] = new_content
+        entry["author"] = session["user"]["username"]  # Устанавливаем автора
+        entry["updated_at"] = datetime.now().isoformat()
+
+        # Обработка файла
+        if file and allowed_file(file.filename):
+            old_file = entry.get("file")
+            if old_file:
+                old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            entry["file"] = secure_filename(file.filename)
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], entry["file"]))
+
+        save_data(data)
+
+        # Запись в аудит
+        log_action(
+            username=session["user"]["username"],
+            action_type="edit",
+            target=old_title,
+            details=f"Изменение записи",
+            old_value=old_content[:100] + "..." if len(old_content) > 100 else old_content,
+            new_value=new_content[:100] + "..." if len(new_content) > 100 else new_content
+        )
+        
+        filter_manager.data = data
+        return redirect(url_for("index"))
+
+    return render_template("edit.html", entry=entry, entry_id=entry_id, topics=filter_manager.get_unique_topics())
+
+
+@app.route("/delete/id/<entry_id>")
+def delete_entry_by_id(entry_id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    data = load_data()
+    entry_index = find_entry_index_by_id(data, entry_id)
+    if entry_index is None:
+        return "Запись не найдена", 404
+
+    entry = data[entry_index]
+    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+        
+    log_action(
+        username=session["user"]["username"],
+        action_type="delete",
+        target=entry["title"],
+        details="Удалена запись из базы знаний"
+    )
+
+    old_file = entry.get("file")
+    if old_file:
+        old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+    del data[entry_index]
+    save_data(data)
+    return redirect(url_for("index"))
+
+
 def start_background_tasks():
     schedule.every().monday.at("00:00").do(sync_edsoo)
     thread = threading.Thread(target=background_job, daemon=True)
@@ -717,13 +777,4 @@ def start_background_tasks():
 
 if __name__ == "__main__":
     start_scheduler(app)  # Передаем app в start_scheduler
-    app.run(debug=True)
-if __name__ == "__main__":
-    filter_manager.add_topic_field()
-    app.run(debug=True)
-
-if __name__ == "__main__":
-    start_background_tasks()
-    app.run(debug=True)
-if __name__ == "__main__":
     app.run(debug=True)
