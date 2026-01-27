@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ entry.title }}</h2>
+    <p><strong>Создано:</strong> {{ format_date(entry.created_at) }}</p>
+    <p><strong>Изменено:</strong> {{ format_date(entry.updated_at) }}</p>
+    <hr>
+    <pre>{{ entry.content }}</pre>
+    <a href="{{ url_for('index') }}">Назад</a>
+<pre>{{ entry.content }}</pre>
+
+<!-- Проверка наличия файла -->
+{% if entry.file %}
+    <p><strong>Создано:</strong> {{ format_date(entry.created_at) }}</p>
+    <p><strong>Автор:</strong> {{entry.author}}</p>
+  <p>
+    <a href="{{ url_for('uploaded_file', filename=entry.file) }}" target="_blank">
+      📥 Скачать файл: {{entry.file}}
+    </a>
+  </p>
+{% else %}
+  <p>📎 Файл не прикреплён</p>
+{% endif %}
+
+<br>
+<a href="{{ url_for('index') }}">Назад</a>
+{% endblock %}

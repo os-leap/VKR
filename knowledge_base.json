@@ -1,0 +1,174 @@
+[
+    {
+        "title": "1123123",
+        "content": "qweqewq",
+        "file": "PDF.pdf",
+        "created_at": "2025-07-03T18:10:50.967457",
+        "updated_at": "2025-07-30T14:45:34.049040",
+        "author": "admin",
+        "topic": "Без темы"
+    },
+    {
+        "title": "asdadsasdad",
+        "content": "asdadsad",
+        "file": "59df13e9-938c-422e-91c4-6d0ba47a6624.pdf",
+        "created_at": "2025-07-03T18:11:12.548382",
+        "updated_at": "2025-07-03T18:11:12.548394",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "sdfsdf",
+        "content": "sdfsdf",
+        "file": "e397b107-e3e8-4e65-aa59-7f7459228139.docx",
+        "created_at": "2025-07-03T18:11:43.163093",
+        "updated_at": "2025-07-03T18:11:43.163105",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "проверка 1",
+        "content": "проверка 3",
+        "file": null,
+        "created_at": "2025-07-06T15:03:47.602460",
+        "updated_at": "2025-07-06T15:03:54.417191",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "ghjfthrf2",
+        "content": "asdads",
+        "created_at": "2025-07-07T20:35:18.138926",
+        "updated_at": "2025-07-07T20:35:18.138933",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "п1",
+        "content": "1231231",
+        "created_at": "2025-07-07T20:51:13.512796",
+        "updated_at": "2025-07-07T20:59:47.566506",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "фывфвыфвыфв",
+        "content": "фывфвыфыв",
+        "created_at": "2025-07-07T20:59:56.030738",
+        "updated_at": "2025-07-07T20:59:56.030746",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "asdasd",
+        "content": "asdasd",
+        "file": "e397b107-e3e8-4e65-aa59-7f7459228139_6.docx",
+        "created_at": "2025-07-07T21:06:47.866368",
+        "updated_at": "2025-07-07T21:06:47.866379",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "asdasdddddd",
+        "content": "asdasdads",
+        "file": "e397b107-e3e8-4e65-aa59-7f7459228139_6.docx",
+        "created_at": "2025-07-07T21:07:26.808926",
+        "updated_at": "2025-07-07T21:07:26.808947",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "Пример записи",
+        "content": "Тестовое содержание",
+        "created_at": "2025-04-05T10:00:00",
+        "updated_at": "2025-04-05T10:00:00",
+        "author": "admin",
+        "topic": "Без темы"
+    },
+    {
+        "title": "фывфыв1111",
+        "content": "фывфывфывфывф",
+        "author": "admin1",
+        "created_at": "2025-07-08T20:37:58.744234",
+        "updated_at": "2025-07-08T20:37:58.744242",
+        "topic": "Без темы"
+    },
+    {
+        "title": "Федеральный закон от 19.12.2023 № 618-ФЗ «О внесении изменений в Федеральный закон «Об образовании в Российской Федерации»",
+        "content": "фвывыфывф3",
+        "author": "admin1",
+        "created_at": "2025-07-08T20:38:42.594130",
+        "updated_at": "2025-07-08T20:38:42.594137",
+        "topic": "Без темы"
+    },
+    {
+        "title": "проверка генерации",
+        "content": "проверка генерации 1231231",
+        "author": "admin",
+        "created_at": "2025-07-14T17:44:08.388173",
+        "updated_at": "2025-07-14T17:44:25.399233",
+        "topic": "Без темы"
+    },
+    {
+        "title": "ФГОС НОО",
+        "content": "Настоящий документ содержит...",
+        "file": "ФГОС_НОО.pdf",
+        "source": "edsoo.ru",
+        "created_at": "2025-04-05T10:00:00",
+        "updated_at": "2025-04-05T10:00:00",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "Скачать PDF",
+        "content": "\n\n\n\n\n\n",
+        "file": "Скачать_PDF.pdf",
+        "source": "edsoo.ru",
+        "created_at": "2025-07-18T20:18:31.875484",
+        "updated_at": "2026-01-26T01:24:54.650332",
+        "author": "system",
+        "topic": "Без темы"
+    },
+    {
+        "title": "ФГОС НОО",
+        "content": "чясчясчяс",
+        "author": "admin",
+        "created_at": "2025-07-18T20:22:02.745549",
+        "updated_at": "2025-07-18T20:22:02.745563",
+        "topic": "Без темы"
+    },
+    {
+        "title": "я тут",
+        "content": "фффффф",
+        "author": "admin",
+        "created_at": "2025-07-29T21:03:45.169575",
+        "updated_at": "2025-07-29T21:03:45.169588",
+        "topic": "Без темы"
+    },
+    {
+        "title": "яыыы",
+        "content": "ыыыы",
+        "author": "admin",
+        "created_at": "2025-07-29T21:04:48.879734",
+        "updated_at": "2025-07-29T21:04:48.879749",
+        "topic": "Без темы"
+    },
+    {
+        "title": "zxc",
+        "content": "zxc",
+        "file": "PDF.pdf",
+        "author": "admin",
+        "created_at": "2025-07-30T14:40:27.127578",
+        "updated_at": "2025-07-30T14:40:27.127592",
+        "topic": "Без темы"
+    },
+    {
+        "title": "расчетный лист",
+        "content": "лист",
+        "topic": "Без темы",
+        "file": "2025.pdf",
+        "author": "admin",
+        "created_at": "2025-12-06T17:54:28.644272",
+        "updated_at": "2025-12-06T17:54:28.644282"
+    }
+]
