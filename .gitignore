@@ -1,1 +1,4 @@
-Nothing should be ignored in this case. The changes consist only of source files (`.py`, `.css`, `.html`) and a template file, with no build artifacts, dependencies, or temporary files present.
+```
+__pycache__/
+*.pyc
+```
