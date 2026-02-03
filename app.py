@@ -3,6 +3,7 @@ import os
 import re
 import threading
 import logging
+import uuid
 from datetime import datetime
 import audit_system
 import bcrypt
@@ -435,7 +436,8 @@ def add_entry():
             "file": filename,
             "author": session["user"]["username"],
             "created_at": datetime.now().isoformat(),
-            "updated_at": datetime.now().isoformat()
+            "updated_at": datetime.now().isoformat(),
+            "id": str(uuid.uuid4())
         }
         
         # Добавляем информацию об образовании, если она есть
