@@ -2,6 +2,7 @@ import json
 import os
 import re
 import threading
+import logging
 from datetime import datetime
 import audit_system
 import bcrypt
