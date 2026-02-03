@@ -484,23 +484,23 @@ def add_entry():
     )
 
 
-@app.route("/view/<int:index>")
-def view_entry(index):
+@app.route("/view/<id>")
+def view_entry(id):
     data = load_data()
-    if index < 0 or index >= len(data):
+    entry = next((item for item in data if str(item.get('id')) == str(id)), None)
+    if entry is None:
         return "Запись не найдена", 404
-    entry = data[index]
     return render_template("view.html", entry=entry, format_date=format_date)
 
 
-@app.route("/edit/<int:index>", methods=["GET", "POST"])
-def edit_entry(index):
+@app.route("/edit/<id>", methods=["GET", "POST"])
+def edit_entry(id):
     if "user" not in session:
         return redirect(url_for("login"))
     data = load_data()
-    if index < 0 or index >= len(data):
+    entry = next((item for item in data if str(item.get('id')) == str(id)), None)
+    if entry is None:
         return "Запись не найдена", 404
-    entry = data[index]
 
     # Проверяем наличие автора, если его нет — устанавливаем значение по умолчанию
     entry_author = entry.get("author", "system")
@@ -569,16 +569,16 @@ def edit_entry(index):
     return render_template("edit.html", entry=entry, index=index, entry_id=entry.get('id'), topics=filter_manager.get_unique_topics())
 
 
-@app.route("/delete/<int:index>")
-def delete_entry(index):
+@app.route("/delete/<id>")
+def delete_entry(id):
     if "user" not in session:
         return redirect(url_for("login"))
 
     data = load_data()
-    if index < 0 or index >= len(data):
+    entry = next((item for item in data if str(item.get('id')) == str(id)), None)
+    if entry is None:
         return "Запись не найдена", 404
 
-    entry = data[index]
     if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin":
         return "Доступ запрещён", 403
     log_action(
@@ -593,7 +593,8 @@ def delete_entry(index):
         old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
         if os.path.exists(old_path):
             os.remove(old_path)
-    del data[index]
+    
+    data.remove(entry)
     save_data(data)
     return redirect(url_for("index"))
 
