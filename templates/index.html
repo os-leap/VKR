@@ -1,172 +1,233 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Образовательная платформа</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <title>Система управления знаниями</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Образовательная платформа</h1>
-        
-        <div class="topic-selector">
-            <label for="topicSelect">Выберите тему:</label>
-            <select id="topicSelect" class="compact-topic-select" onchange="onTopicChange()">
-                <option value="">-- Выберите тему --</option>
-                <option value="math_algebra">Алгебра</option>
-                <option value="math_geometry">Геометрия</option>
-                <option value="physics_mechanics">Физика: Механика</option>
-                <option value="chemistry_basic">Химия: Основы</option>
-            </select>
-        </div>
-        
-        <div class="recommendations-section">
-            <h2>Вам может быть интересно</h2>
-            
-            <div class="recommendation-category">
-                <h3>Часто изучаемые темы</h3>
-                <div id="frequent-topics">
-                    <span class="no-recommendations">Загрузка рекомендаций...</span>
-                </div>
+  <div class="container">
+    <h1>Система управления знаниями</h1>
+
+    <!-- Панель пользователя -->
+    {% if session.user %}
+      <div class="user-info">
+        Вход: {{ session.user.username }} ({{ session.user.role }})
+        <a href="{{ url_for('logout') }}" class="logout-btn">Выход</a>
+
+        {% if session.user.role == "admin" %}
+          <div class="admin-dropdown">
+            <button class="admin-btn dropdown-toggle">🔑 Админ-панель</button>
+            <div class="dropdown-content">
+              <a href="{{ url_for('sync_edsoo_route') }}" class="admin-tool">🔄 Проверить обновления</a>
+              <a href="{{ url_for('audit_log') }}" class="admin-tool">📋 Сбор событий</a>
+              <a href="{{ url_for('manage_filters') }}" class="admin-tool">🔧 Редактировать фильтры</a>
+              <a href="{{ url_for('manage_users') }}" class="admin-tool">👤 Управление пользователями</a>
             </div>
-            
-            <div class="recommendation-category">
-                <h3>Популярные разделы</h3>
-                <div id="frequent-sections">
-                    <span class="no-recommendations">Загрузка рекомендаций...</span>
-                </div>
-            </div>
-            
-            <div class="recommendation-category">
-                <h3>Полезные записи</h3>
-                <div id="frequent-records">
-                    <span class="no-recommendations">Загрузка рекомендаций...</span>
-                </div>
-            </div>
-        </div>
+          </div>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="login-link">
+        <a href="{{ url_for('login') }}" class="login-btn">Войти</a>
+      </div>
+    {% endif %}
+
+    <!-- Панель фильтрации и поиска -->
+    <div class="search-panel">
+      <form method="GET" action="{{ url_for('search_entry_get') }}">
+        <input type="text" name="query" placeholder="Поиск..." value="{{ search_query or '' }}" required>
+        <input type="hidden" name="topic" value="{{ selected_topic }}">
+        <input type="hidden" name="class" value="{{ selected_class }}">
+        <input type="hidden" name="parallel" value="{{ selected_parallel }}">
+        <input type="hidden" name="subject" value="{{ selected_subject }}">
+        <select name="search_type" class="search-type-select">
+          <option value="syntax" {% if search_type == 'syntax' or not search_type %}selected{% endif %}>Синтаксический поиск</option>
+          <option value="semantic" {% if search_type == 'semantic' %}selected{% endif %}>Семантический поиск</option>
+        </select>
+        <button type="submit">Искать</button>
+      </form>
+      <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
     </div>
 
-    <script>
-        // Имитация идентификатора пользователя
-        const userId = 'user_' + Math.random().toString(36).substr(2, 9);
-        
-        // Функция загрузки рекомендаций
-        async function loadRecommendations() {
-            try {
-                const response = await fetch(`/api/recommendations?user_id=${userId}`);
-                const data = await response.json();
+    <!-- Панель расширенной фильтрации -->
+    <div class="advanced-filter-panel">
+      <h3>Фильтры</h3>
+      <form method="GET" action="{{ url_for('index') }}">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label for="class">Класс:</label>
+            <select name="class" id="class" onchange="this.form.submit()">
+              <option value="">Все классы</option>
+              {% for class in available_classes %}
+              <option value="{{ class }}" {% if class == selected_class %}selected{% endif %}>
+                {{ class }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="parallel">Параллель:</label>
+            <select name="parallel" id="parallel" onchange="this.form.submit()">
+              <option value="">Все параллели</option>
+              {% for parallel in available_parallels %}
+              <option value="{{ parallel }}" {% if parallel == selected_parallel %}selected{% endif %}>
+                {{ parallel }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="subject">Предмет:</label>
+            <select name="subject" id="subject" onchange="this.form.submit()">
+              <option value="">Все предметы</option>
+              {% for subject in available_subjects %}
+              <option value="{{ subject }}" {% if subject == selected_subject %}selected{% endif %}>
+                {{ subject }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group topic-selector">
+            <label for="topic">Тема:</label>
+            <select name="topic" id="topic" onchange="this.form.submit()" class="compact-topic-select">
+              {% for topic in topics %}
+              <option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>
+                {{ topic }} {% if topic_stats and topic in topic_stats and topic != 'Все темы' %}({{ topic_stats[topic] }}){% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group date-filter">
+            <label for="date_from">Дата от:</label>
+            <input type="date" name="date_from" id="date_from" value="{{ date_from or '' }}" onchange="this.form.submit()">
+          </div>
+
+          <div class="filter-group date-filter">
+            <label for="date_to">Дата до:</label>
+            <input type="date" name="date_to" id="date_to" value="{{ date_to or '' }}" onchange="this.form.submit()">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Отображение активных фильтров -->
+    <div class="active-filters">
+      <strong>Активные фильтры:</strong>
+      {% if selected_class %}
+        <span class="filter-badge">Класс: {{ selected_class }} <a href="{{ url_for('index', parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if selected_parallel %}
+        <span class="filter-badge">Параллель: {{ selected_parallel }} <a href="{{ url_for('index', class=selected_class, subject=selected_subject, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if selected_subject %}
+        <span class="filter-badge">Предмет: {{ selected_subject }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if selected_topic and selected_topic != 'Все темы' %}
+        <span class="filter-badge">Тема: {{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, date_from=date_from, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if date_from %}
+        <span class="filter-badge">Дата от: {{ date_from }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if date_to %}
+        <span class="filter-badge">Дата до: {{ date_to }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_from=date_from) }}">×</a></span>
+      {% endif %}
+      {% if selected_class or selected_parallel or selected_subject or (selected_topic and selected_topic != 'Все темы') or date_from or date_to %}
+        <a href="{{ url_for('index') }}" class="clear-filters-btn">Очистить все фильтры</a>
+      {% endif %}
+    </div>
+
+    <!-- Список записей -->
+    {% if entries %}
+      <ul class="entries-list">
+        {% for entry in entries %}
+          <li class="entry-item">
+            <div class="entry-header">
+              <h2>{{ entry.title }}</h2>
+              <div class="entry-meta">
+                <!-- Информация об образовательных фильтрах -->
+                {% if entry.education_info %}
+                  {% if entry.education_info.class %}
+                    <span>Класс: {{ entry.education_info.class }}</span>
+                  {% endif %}
+                  {% if entry.education_info.parallel %}
+                    <span>Параллель: {{ entry.education_info.parallel }}</span>
+                  {% endif %}
+                  {% if entry.education_info.subject %}
+                    <span>Предмет: {{ entry.education_info.subject }}</span>
+                  {% endif %}
+                {% endif %}
                 
-                if (data.recommendations) {
-                    updateRecommendationDisplay(data.recommendations);
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке рекомендаций:', error);
-                document.getElementById('frequent-topics').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендации</span>';
-                document.getElementById('frequent-sections').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендаций</span>';
-                document.getElementById('frequent-records').innerHTML = '<span class="no-recommendations">Не удалось загрузить рекомендаций</span>';
-            }
-        }
+                <span>Тема: {{ entry.topic }}</span>
+                <span>Создано: {{ format_date(entry.created_at) }}</span>
+                <span>Изменено: {{ format_date(entry.updated_at) }}</span>
+                <span>Автор: {{ entry.author }}</span>
+              </div>
+            </div>
+            <div class="entry-content">
+              <p>{{ entry.content[:200] }}{% if entry.content|length > 200 %}...{% endif %}</p>
+              {% if entry.file %}
+                <div class="entry-file">
+                  <span>📎 Файл: </span>
+                  <a href="{{ url_for('uploaded_file', filename=entry.file) }}" target="_blank">{{ entry.file }}</a>
+                </div>
+              {% endif %}
+            </div>
+            <div class="entry-actions">
+              <a href="{{ url_for('view_entry_by_id', entry_id=entry.id) }}" class="btn-view">Просмотр</a>
+              {% if session.user and (entry.author == session.user.username or session.user.role == "admin") %}
+                <a href="{{ url_for('edit_entry_by_id', entry_id=entry.id) }}" class="btn-edit">Редактировать</a>
+                <a href="{{ url_for('delete_entry_by_id', entry_id=entry.id) }}" class="btn-delete">Удалить</a>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="no-entries">Нет записей для отображения</p>
+    {% endif %}
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dropdownToggle = document.querySelector('.dropdown-toggle');
+      const dropdownContent = document.querySelector('.dropdown-content');
+      
+      dropdownToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdownContent.classList.toggle('show');
         
-        // Функция обновления отображения рекомендаций
-        function updateRecommendationDisplay(recommendations) {
-            // Обновление часто изучаемых тем
-            const topicsDiv = document.getElementById('frequent-topics');
-            if (recommendations.topic && recommendations.topic.length > 0) {
-                topicsDiv.innerHTML = '';
-                recommendations.topic.forEach(item => {
-                    const topicElement = document.createElement('span');
-                    topicElement.className = 'recommendation-item';
-                    topicElement.title = `Запрошено ${item.frequency} раз`;
-                    topicElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
-                    topicElement.onclick = () => selectTopic(item.item_id);
-                    topicsDiv.appendChild(topicElement);
-                });
-            } else {
-                topicsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
-            }
-            
-            // Обновление популярных разделов
-            const sectionsDiv = document.getElementById('frequent-sections');
-            if (recommendations.section && recommendations.section.length > 0) {
-                sectionsDiv.innerHTML = '';
-                recommendations.section.forEach(item => {
-                    const sectionElement = document.createElement('span');
-                    sectionElement.className = 'recommendation-item';
-                    sectionElement.title = `Запрошено ${item.frequency} раз`;
-                    sectionElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
-                    sectionElement.onclick = () => selectSection(item.item_id);
-                    sectionsDiv.appendChild(sectionElement);
-                });
-            } else {
-                sectionsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
-            }
-            
-            // Обновление полезных записей
-            const recordsDiv = document.getElementById('frequent-records');
-            if (recommendations.record && recommendations.record.length > 0) {
-                recordsDiv.innerHTML = '';
-                recommendations.record.forEach(item => {
-                    const recordElement = document.createElement('span');
-                    recordElement.className = 'recommendation-item';
-                    recordElement.title = `Запрошено ${item.frequency} раз`;
-                    recordElement.innerHTML = `${item.item_id.replace(/_/g, ' ')} <span class="frequency-badge">${item.frequency}</span>`;
-                    recordElement.onclick = () => selectRecord(item.item_id);
-                    recordsDiv.appendChild(recordElement);
-                });
-            } else {
-                recordsDiv.innerHTML = '<span class="no-recommendations">Нет рекомендаций</span>';
-            }
+        // При закрытии меню убираем задержки анимации
+        if (!dropdownContent.classList.contains('show')) {
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach(tool => {
+            tool.style.animationDelay = '0s';
+          });
+        } else {
+          // При открытии меню добавляем задержки анимации для каждого элемента
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach((tool, index) => {
+            tool.style.animationDelay = (index * 0.05) + 's';
+          });
         }
-        
-        // Функция для выбора темы
-        function selectTopic(topicId) {
-            document.getElementById('topicSelect').value = topicId;
-            onTopicChange();
+      });
+      
+      // Закрытие меню при клике вне его области
+      document.addEventListener('click', function(e) {
+        if (!dropdownToggle.contains(e.target) && !dropdownContent.contains(e.target)) {
+          dropdownContent.classList.remove('show');
+          // Сбрасываем задержки анимации
+          const adminTools = dropdownContent.querySelectorAll('.admin-tool');
+          adminTools.forEach(tool => {
+            tool.style.animationDelay = '0s';
+          });
         }
-        
-        // Функция для выбора раздела
-        function selectSection(sectionId) {
-            console.log('Выбран раздел:', sectionId);
-            // Здесь можно добавить логику для отображения раздела
-        }
-        
-        // Функция для выбора записи
-        function selectRecord(recordId) {
-            console.log('Выбрана запись:', recordId);
-            // Здесь можно добавить логику для отображения записи
-        }
-        
-        // Функция вызывается при изменении темы
-        function onTopicChange() {
-            const selectedValue = document.getElementById('topicSelect').value;
-            if (selectedValue) {
-                logRequest(userId, 'topic', selectedValue);
-            }
-        }
-        
-        // Функция для логирования запроса пользователя
-        async function logRequest(userId, itemType, itemId) {
-            try {
-                await fetch('/api/log_request', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        item_type: itemType,
-                        item_id: itemId
-                    })
-                });
-            } catch (error) {
-                console.error('Ошибка при логировании запроса:', error);
-            }
-        }
-        
-        // Загрузка рекомендаций при загрузке страницы
-        window.onload = function() {
-            loadRecommendations();
-        };
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,549 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+  background-color: #f4f4f4;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+  color: #333;
+}
+
+input, textarea, button {
+  font-size: 16px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  background-color: #007BFF;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #f9f9f9;
+  margin-bottom: 15px;
+  padding: 15px;
+  border-left: 5px solid #007BFF;
+  border-radius: 5px;
+}
+.user-info {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.logout-btn, .login-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #007BFF;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.logout-btn:hover, .login-btn:hover {
+    background-color: #0056b3;
+}
+.c-button {
+    min-width: 100px;
+  font-family: inherit;
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  background: #4676d7;
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.btn-sync {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.btn-sync:hover {
+    background-color: #218838;
+}
+.audit-filters {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.btn-filter {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 22px;
+}
+
+.btn-filter:hover {
+    background-color: #0069d9;
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.audit-table th, .audit-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.audit-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.audit-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.edit-details {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.old-value {
+    color: #dc3545;
+    margin-bottom: 5px;
+}
+
+.new-value {
+    color: #28a745;
+}
+
+.no-logs {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.btn-back {
+    display: inline-block;
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.btn-back:hover {
+    background-color: #5a6268;
+}
+/* Стили для страницы аудита */
+.audit-filters {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.btn-filter {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 22px;
+}
+
+.btn-filter:hover {
+    background-color: #0069d9;
+}
+
+
+/* Компактный стиль для выбора темы */
+.compact-topic-select {
+    min-width: 150px;
+    width: auto;
+    padding: 6px 8px;
+    border: 1px solid #007BFF;
+    border-radius: 20px;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+}
+
+.compact-topic-select:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+    background-color: white;
+}
+
+.compact-topic-select:hover {
+    background-color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.15);
+}
+
+.topic-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Стили для админ-меню */
+.admin-dropdown {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.dropdown-toggle {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background-color: white;
+    min-width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 12px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-15px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0,0,0,0.1);
+    pointer-events: none;
+}
+
+.dropdown-content.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.admin-tool {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.admin-tool:last-child {
+    border-bottom: none;
+}
+
+.admin-tool:hover {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    padding-left: 20px;
+    color: #495057;
+}
+
+.admin-tool::before {
+    content: "•";
+    margin-right: 10px;
+    font-size: 1.2em;
+    color: #667eea;
+}
+
+/* Анимация появления инструментов */
+.dropdown-content.show .admin-tool {
+    animation: slideInFromLeft 0.4s ease forwards;
+    opacity: 0;
+}
+
+.dropdown-content.show .admin-tool:nth-child(1) { animation-delay: 0.1s; }
+.dropdown-content.show .admin-tool:nth-child(2) { animation-delay: 0.15s; }
+.dropdown-content.show .admin-tool:nth-child(3) { animation-delay: 0.2s; }
+.dropdown-content.show .admin-tool:nth-child(4) { animation-delay: 0.25s; }
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Стили для страницы управления пользователями */
+.user-form-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-form-section h2 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #495057;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007BFF;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.btn-add-user {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add-user:hover {
+    background-color: #218838;
+}
+
+.users-table-section {
+    margin-bottom: 30px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.users-table th {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+}
+
+.users-table tr:last-child td {
+    border-bottom: none;
+}
+
+.users-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.role-change-btn,
+.btn-delete-user {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 2px;
+}
+
+.role-change-btn {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.role-change-btn:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete-user {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete-user:hover {
+    background-color: #c82333;
+}
+
+.no-users {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+
+.back-link {
+    margin-top: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group.date-filter {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group.date-filter label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group.date-filter input {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Стили для сообщений об ошибках */
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}

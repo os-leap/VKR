@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Управление фильтрами</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Управление фильтрами</h1>
+    
+    <div class="user-info">
+      Вход: {{ session.user.username }} ({{ session.user.role }})
+      <a href="{{ url_for('logout') }}" class="logout-btn">Выход</a>
+      <a href="{{ url_for('index') }}" class="back-btn">← Назад к записям</a>
+    </div>
+    
+    <div class="filters-management">
+      <h2>Классы</h2>
+      <form method="POST" action="{{ url_for('manage_filters') }}">
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="filter_type" value="class">
+        <input type="text" name="filter_value" placeholder="Новый класс" required>
+        <button type="submit">Добавить класс</button>
+      </form>
+      
+      <ul class="filter-list">
+        {% for class in classes %}
+        <li>
+          {{ class }}
+          <form method="POST" action="{{ url_for('manage_filters') }}" style="display: inline;">
+            <input type="hidden" name="action" value="remove">
+            <input type="hidden" name="filter_type" value="class">
+            <input type="hidden" name="filter_value" value="{{ class }}">
+            <button type="submit" class="btn-remove">Удалить</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      
+      <h2>Параллели</h2>
+      <form method="POST" action="{{ url_for('manage_filters') }}">
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="filter_type" value="parallel">
+        <input type="text" name="filter_value" placeholder="Новая параллель" required>
+        <button type="submit">Добавить параллель</button>
+      </form>
+      
+      <ul class="filter-list">
+        {% for parallel in parallels %}
+        <li>
+          {{ parallel }}
+          <form method="POST" action="{{ url_for('manage_filters') }}" style="display: inline;">
+            <input type="hidden" name="action" value="remove">
+            <input type="hidden" name="filter_type" value="parallel">
+            <input type="hidden" name="filter_value" value="{{ parallel }}">
+            <button type="submit" class="btn-remove">Удалить</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      
+      <h2>Предметы</h2>
+      <form method="POST" action="{{ url_for('manage_filters') }}">
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="filter_type" value="subject">
+        <input type="text" name="filter_value" placeholder="Новый предмет" required>
+        <button type="submit">Добавить предмет</button>
+      </form>
+      
+      <ul class="filter-list">
+        {% for subject in subjects %}
+        <li>
+          {{ subject }}
+          <form method="POST" action="{{ url_for('manage_filters') }}" style="display: inline;">
+            <input type="hidden" name="action" value="remove">
+            <input type="hidden" name="filter_type" value="subject">
+            <input type="hidden" name="filter_value" value="{{ subject }}">
+            <button type="submit" class="btn-remove">Удалить</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

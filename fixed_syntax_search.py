@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+# Fixed version of syntax-aware search functionality
+
+import re
+
+def syntax_aware_search(text, query):
+    """
+    Performs syntax-aware search supporting:
+    - AND operator: "word1 AND word2"
+    - OR operator: "word1 OR word2" 
+    - NOT operator: "word1 NOT word2"
+    - Phrase search: "word1 word2" (both words present)
+    - Quoted phrases: "\"exact phrase\""
+    """
+    # Normalize text and query to lowercase
+    text_lower = text.lower()
+    query = query.strip()
+    
+    # Handle quoted phrases first
+    quoted_phrases = re.findall(r'"([^"]*)"', query)
+    query_without_quotes = re.sub(r'"[^"]*"', ' QUOTED_PHRASE_PLACEHOLDER ', query)
+    
+    # Check if all quoted phrases are present in the text
+    for phrase in quoted_phrases:
+        phrase = phrase.strip().lower()
+        if phrase and phrase not in text_lower:
+            return False
+    
+    # Split by AND, OR, NOT operators while preserving them
+    parts = re.split(r'\s+(AND|OR|NOT)\s+', query_without_quotes, flags=re.IGNORECASE)
+    
+    # Process parts with operators
+    i = 0
+    result = None  # We'll initialize this based on the first term
+    operator = 'AND'  # Default operator
+    
+    while i < len(parts):
+        part = parts[i].strip()
+        
+        if part.upper() in ['AND', 'OR', 'NOT']:
+            operator = part.upper()
+        else:
+            term = part.strip().lower()
+            term_exists = False
+            
+            # Handle quoted phrases (they were already verified)
+            if 'QUOTED_PHRASE_PLACEHOLDER' in term and not ('QUOTED_PHRASE_PLACEHOLDER' != term and 'QUOTED_PHRASE_PLACEHOLDER' in term and any(c.isalnum() for c in term.replace('QUOTED_PHRASE_PLACEHOLDER', ''))):
+                # This part is just a placeholder or mostly a placeholder
+                # If it's exactly the placeholder or just the placeholder with spaces around, it means the quoted phrase was valid
+                stripped_term = term.replace('QUOTED_PHRASE_PLACEHOLDER', '').strip()
+                if not stripped_term:  # It's just the placeholder with possible spacing
+                    term_exists = True
+                else:
+                    # Mixed with other content
+                    term_exists = True  # Quoted phrase part is valid
+                    # Check for other content in the same part
+                    other_content = re.sub(r'QUOTED_PHRASE_PLACEHOLDER', '', term).strip()
+                    if other_content:
+                        other_subterms = [t.strip() for t in other_content.split() if t.strip() and t.strip() != 'QUOTED_PHRASE_PLACEHOLDER']
+                        for subterm in other_subterms:
+                            if subterm:
+                                term_exists = term_exists and (subterm in text_lower)
+            else:
+                # Handle regular terms - for space-separated terms without operators, all should be present (AND logic)
+                subterms = [t.strip() for t in term.split() if t.strip()]
+                
+                if len(subterms) == 0:
+                    term_exists = True  # Empty term matches everything
+                elif len(subterms) == 1:
+                    # Single term - check if it's the placeholder or a real term
+                    if subterms[0] == 'QUOTED_PHRASE_PLACEHOLDER':
+                        term_exists = True  # Quoted phrase was already validated
+                    else:
+                        # Single real term - just check if it exists
+                        term_exists = (subterms[0] in text_lower)
+                else:
+                    # Multiple terms - all must exist (AND logic)
+                    term_exists = True
+                    for subterm in subterms:
+                        if subterm == 'QUOTED_PHRASE_PLACEHOLDER':
+                            # This is already validated, so continue
+                            continue
+                        elif subterm != 'QUOTED_PHRASE_PLACEHOLDER':  # Skip placeholder if it's mixed with other terms
+                            term_exists = term_exists and (subterm in text_lower)
+            
+            # Initialize result with the first term's value
+            if result is None:
+                result = term_exists
+            else:
+                if operator == 'AND':
+                    result = result and term_exists
+                elif operator == 'OR':
+                    result = result or term_exists
+                elif operator == 'NOT':
+                    result = result and not term_exists
+        
+        i += 1
+    
+    # If no terms were processed, return True (for edge cases)
+    if result is None:
+        return True
+    
+    return result
+
+def test_syntax_aware_search():
+    test_text = "The quick brown fox jumps over the lazy dog. This is a sample text for testing."
+    
+    print("Testing fixed syntax-aware search function...")
+    
+    # Test basic word search
+    assert syntax_aware_search(test_text, "quick") == True
+    print("✓ Basic word search works")
+    
+    # Test phrase search (AND logic by default)
+    assert syntax_aware_search(test_text, "quick brown") == True
+    print("✓ Phrase search works")
+    
+    # Test AND operator
+    assert syntax_aware_search(test_text, "quick AND fox") == True
+    print("✓ AND operator works")
+    
+    # Test OR operator
+    assert syntax_aware_search(test_text, "cat OR fox") == True
+    print("✓ OR operator works")
+    
+    # Test NOT operator
+    assert syntax_aware_search(test_text, "quick NOT cat") == True
+    print("✓ NOT operator works")
+    
+    # Test NOT operator with existing word
+    assert syntax_aware_search(test_text, "quick NOT dog") == False
+    print("✓ NOT operator with existing word works")
+    
+    # Test quoted phrases
+    assert syntax_aware_search(test_text, "\"quick brown\"") == True
+    print("✓ Quoted phrases work")
+    
+    # Test complex query - this was failing before
+    assert syntax_aware_search(test_text, "\"quick brown\" AND dog") == True
+    print("✓ Complex query works")
+    
+    # Test complex query with OR
+    assert syntax_aware_search(test_text, "\"quick brown\" OR cat") == True
+    print("✓ Complex query with OR works")
+    
+    # Additional test cases
+    assert syntax_aware_search(test_text, "fox AND \"lazy dog\"") == True
+    print("✓ More complex query works")
+    
+    assert syntax_aware_search(test_text, "\"quick brown\" AND \"lazy dog\"") == True
+    print("✓ Multiple quoted phrases work")
+    
+    assert syntax_aware_search(test_text, "\"quick brown\" OR \"lazy cat\"") == True
+    print("✓ OR with quoted phrases works")
+    
+    print("\nAll tests passed! The fixed syntax-aware search function is working correctly.")
+
+if __name__ == "__main__":
+    test_syntax_aware_search()
