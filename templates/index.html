@@ -54,7 +54,7 @@
     <div class="advanced-filter-panel">
       <h3>Фильтры</h3>
       <form method="GET" action="{{ url_for('index') }}">
-        <div class="filter-row">
+        <div class="filter-grid">
           <div class="filter-group">
             <label for="class">Класс:</label>
             <select name="class" id="class" onchange="this.form.submit()">
@@ -101,6 +101,16 @@
               {% endfor %}
             </select>
           </div>
+
+          <div class="filter-group date-filter">
+            <label for="date_from">Дата от:</label>
+            <input type="date" name="date_from" id="date_from" value="{{ date_from or '' }}" onchange="this.form.submit()">
+          </div>
+
+          <div class="filter-group date-filter">
+            <label for="date_to">Дата до:</label>
+            <input type="date" name="date_to" id="date_to" value="{{ date_to or '' }}" onchange="this.form.submit()">
+          </div>
         </div>
       </form>
     </div>
@@ -109,18 +119,24 @@
     <div class="active-filters">
       <strong>Активные фильтры:</strong>
       {% if selected_class %}
-        <span class="filter-badge">Класс: {{ selected_class }} <a href="{{ url_for('index', parallel=selected_parallel, subject=selected_subject, topic=selected_topic) }}">×</a></span>
+        <span class="filter-badge">Класс: {{ selected_class }} <a href="{{ url_for('index', parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
       {% if selected_parallel %}
-        <span class="filter-badge">Параллель: {{ selected_parallel }} <a href="{{ url_for('index', class=selected_class, subject=selected_subject, topic=selected_topic) }}">×</a></span>
+        <span class="filter-badge">Параллель: {{ selected_parallel }} <a href="{{ url_for('index', class=selected_class, subject=selected_subject, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
       {% if selected_subject %}
-        <span class="filter-badge">Предмет: {{ selected_subject }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, topic=selected_topic) }}">×</a></span>
+        <span class="filter-badge">Предмет: {{ selected_subject }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
       {% if selected_topic and selected_topic != 'Все темы' %}
-        <span class="filter-badge">Тема: {{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject) }}">×</a></span>
+        <span class="filter-badge">Тема: {{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
-      {% if selected_class or selected_parallel or selected_subject or (selected_topic and selected_topic != 'Все темы') %}
+      {% if date_from %}
+        <span class="filter-badge">Дата от: {{ date_from }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_to=date_to) }}">×</a></span>
+      {% endif %}
+      {% if date_to %}
+        <span class="filter-badge">Дата до: {{ date_to }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_from=date_from) }}">×</a></span>
+      {% endif %}
+      {% if selected_class or selected_parallel or selected_subject or (selected_topic and selected_topic != 'Все темы') or date_from or date_to %}
         <a href="{{ url_for('index') }}" class="clear-filters-btn">Очистить все фильтры</a>
       {% endif %}
     </div>

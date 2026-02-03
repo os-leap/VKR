@@ -513,6 +513,31 @@ li {
     margin-top: 20px;
 }
 
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group.date-filter {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group.date-filter label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group.date-filter input {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100%;
+}
+
 /* Стили для сообщений об ошибках */
 .error-message {
     color: #721c24;

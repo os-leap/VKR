@@ -235,6 +235,8 @@ def index():
     selected_parallel = request.args.get('parallel', '')
     selected_subject = request.args.get('subject', '')
     selected_topic = request.args.get('topic', 'Все темы')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     # Фильтруем записи по всем параметрам
     filtered_data = advanced_filter_manager.filter_entries(
@@ -243,6 +245,25 @@ def index():
         selected_subject=selected_subject,
         selected_topic=selected_topic
     )
+    
+    # Применяем фильтрацию по дате, если указаны параметры
+    if date_from or date_to:
+        filtered_temp = []
+        for entry in filtered_data:
+            entry_date = datetime.fromisoformat(entry['created_at'].replace('Z', '+00:00'))
+            if date_from:
+                from_date = datetime.strptime(date_from, '%Y-%m-%d')
+                if entry_date.date() < from_date.date():
+                    continue
+            if date_to:
+                to_date = datetime.strptime(date_to, '%Y-%m-%d')
+                if entry_date.date() > to_date.date():
+                    continue
+            filtered_temp.append(entry)
+        filtered_data = filtered_temp
+    
+    # Сортируем записи по дате создания (новые сверху)
+    filtered_data.sort(key=lambda x: x['created_at'], reverse=True)
     
     # Получаем доступные фильтры
     available_filters = advanced_filter_manager.get_available_filters()
@@ -268,6 +289,8 @@ def index():
         selected_class=selected_class,
         selected_parallel=selected_parallel,
         selected_subject=selected_subject,
+        date_from=date_from,
+        date_to=date_to,
         unique_classes=unique_classes,
         unique_parallels=unique_parallels,
         unique_subjects=unique_subjects
