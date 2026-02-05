@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Управление резервными копиями</h2>
+
+    <div class="backup-controls">
+        <button onclick="createBackup()" class="btn btn-primary">Создать новую резервную копию</button>
+        <a href="{{ url_for('audit_log') }}" class="btn btn-secondary">Назад к аудиту</a>
+    </div>
+
+    {% if backups %}
+    <table class="backup-table">
+        <thead>
+            <tr>
+                <th>Имя файла</th>
+                <th>Дата создания</th>
+                <th>Размер</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for backup in backups %}
+            <tr>
+                <td>{{ backup.filename }}</td>
+                <td>{{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ "%.2f"|format(backup.size/1024.0) }} KB</td>
+                <td>
+                    <button onclick="restoreBackup('{{ backup.filename }}')" class="btn btn-warning">Восстановить</button>
+                    <a href="#" onclick="confirmDelete('{{ backup.filename }}')" class="btn btn-danger">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Нет доступных резервных копий.</p>
+    {% endif %}
+
+    <script>
+        async function createBackup() {
+            try {
+                const response = await fetch('/create-backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    alert('Резервная копия создана: ' + result.backup_path);
+                    location.reload();
+                } else {
+                    alert('Ошибка создания резервной копии');
+                }
+            } catch (error) {
+                alert('Ошибка соединения при создании резервной копии: ' + error.message);
+            }
+        }
+        
+        async function restoreBackup(filename) {
+            if(confirm('Вы уверены, что хотите восстановить данные из резервной копии "' + filename + '"? Все текущие данные будут заменены.')) {
+                try {
+                    const response = await fetch('/restore-backup/' + encodeURIComponent(filename), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if(result.success) {
+                        alert('Восстановление завершено успешно из: ' + filename);
+                        // Redirect to home page after successful restore
+                        window.location.href = '/';
+                    } else {
+                        alert('Ошибка восстановления: ' + (result.error || 'Неизвестная ошибка'));
+                    }
+                } catch (error) {
+                    alert('Ошибка соединения при восстановлении: ' + error.message);
+                }
+            }
+        }
+        
+        function confirmDelete(filename) {
+            if(confirm('Вы уверены, что хотите удалить резервную копию "' + filename + '"?')) {
+                // Implement deletion functionality here if needed
+                alert('Функция удаления временно недоступна');
+            }
+        }
+    </script>
+{% endblock %}
