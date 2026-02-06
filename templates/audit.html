@@ -17,15 +17,63 @@
                     <option value="add" {% if request.args.get('type') == 'add' %}selected{% endif %}>Добавление</option>
                     <option value="edit" {% if request.args.get('type') == 'edit' %}selected{% endif %}>Редактирование</option>
                     <option value="delete" {% if request.args.get('type') == 'delete' %}selected{% endif %}>Удаление</option>
+                    <option value="login" {% if request.args.get('type') == 'login' %}selected{% endif %}>Вход</option>
+                    <option value="logout" {% if request.args.get('type') == 'logout' %}selected{% endif %}>Выход</option>
                     <option value="sync" {% if request.args.get('type') == 'sync' %}selected{% endif %}>Синхронизация</option>
+                    <option value="backup_create" {% if request.args.get('type') == 'backup_create' %}selected{% endif %}>Создание бэкапа</option>
+                    <option value="backup_restore" {% if request.args.get('type') == 'backup_restore' %}selected{% endif %}>Восстановление бэкапа</option>
+                    <option value="selective_restore" {% if request.args.get('type') == 'selective_restore' %}selected{% endif %}>Выборочное восстановление</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label for="user">Пользователь:</label>
                 <input type="text" id="user" name="user" value="{{ request.args.get('user', '') }}">
             </div>
+            <div class="filter-group">
+                <label for="date_from">От:</label>
+                <input type="date" id="date_from" name="date_from" value="{{ request.args.get('date_from', '') }}">
+            </div>
+            <div class="filter-group">
+                <label for="date_to">До:</label>
+                <input type="date" id="date_to" name="date_to" value="{{ request.args.get('date_to', '') }}">
+            </div>
             <button type="submit" class="btn-filter">Применить</button>
+            <a href="{{ url_for('audit_log') }}" class="btn-reset">Сбросить</a>
         </form>
+    </div>
+
+    <!-- Кнопка управления резервными копиями -->
+    <div class="backup-controls">
+        <a href="{{ url_for('list_backups') }}" class="btn btn-primary">Управление резервными копиями</a>
+        <button onclick="createBackup()" class="btn btn-secondary">Создать резервную копию</button>
+    </div>
+
+    <!-- Блок выборочного восстановления -->
+    <div class="restore-controls">
+        <h3>Выборочное восстановление данных</h3>
+        <form id="restore-form" class="restore-form">
+            <div class="restore-group">
+                <label for="restore_date_from">Период с:</label>
+                <input type="date" id="restore_date_from" name="date_from" required>
+            </div>
+            <div class="restore-group">
+                <label for="restore_date_to">по:</label>
+                <input type="date" id="restore_date_to" name="date_to" required>
+            </div>
+            <div class="restore-group">
+                <label for="restore_action_types">Типы действий:</label>
+                <select id="restore_action_types" name="action_types" multiple size="4">
+                    <option value="delete">Восстановить удаленные записи</option>
+                    <option value="edit">Отменить редактирование</option>
+                </select>
+            </div>
+            <div class="restore-group">
+                <label for="restore_targets">Названия записей для восстановления (через запятую):</label>
+                <input type="text" id="restore_targets" name="targets" placeholder="Например: Заголовок1, Заголовок2">
+            </div>
+            <button type="submit" class="btn btn-warning">Восстановить выбранные данные</button>
+        </form>
+        <div id="restore-result"></div>
     </div>
 
     <!-- Статистика -->
@@ -69,7 +117,12 @@
                     {% if log.action_type == 'add' %}Добавление
                     {% elif log.action_type == 'edit' %}Редактирование
                     {% elif log.action_type == 'delete' %}Удаление
+                    {% elif log.action_type == 'login' %}Вход
+                    {% elif log.action_type == 'logout' %}Выход
                     {% elif log.action_type == 'sync' %}Синхронизация
+                    {% elif log.action_type == 'backup_create' %}Создание бэкапа
+                    {% elif log.action_type == 'backup_restore' %}Восстановление бэкапа
+                    {% elif log.action_type == 'selective_restore' %}Выборочное восстановление
                     {% else %}{{ log.action_type | capitalize }}
                     {% endif %}
                 </td>
@@ -93,4 +146,81 @@
     </table>
 
     <a href="{{ url_for('index') }}" class="btn-back">Назад к базе знаний</a>
+
+    <script>
+        // Function to handle selective data restoration
+        document.getElementById('restore-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const dateFrom = formData.get('date_from');
+            const dateTo = formData.get('date_to');
+            const actionTypes = Array.from(this.querySelectorAll('#restore_action_types option:checked')).map(option => option.value);
+            const targets = formData.get('targets').split(',').map(t => t.trim()).filter(t => t !== '');
+            
+            const resultDiv = document.getElementById('restore-result');
+            resultDiv.innerHTML = '<div class="loading">Выполняется восстановление...</div>';
+            
+            try {
+                const response = await fetch('/restore-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date_from: dateFrom,
+                        date_to: dateTo,
+                        action_types: actionTypes,
+                        targets: targets
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            ${result.message}
+                        </div>
+                    `;
+                    // Refresh the page to show updated logs
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            Ошибка восстановления: ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        Ошибка соединения: ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        // Function to create backup
+        async function createBackup() {
+            try {
+                const response = await fetch('/create-backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    alert('Резервная копия создана: ' + result.backup_path);
+                } else {
+                    alert('Ошибка создания резервной копии');
+                }
+            } catch (error) {
+                alert('Ошибка соединения при создании резервной копии: ' + error.message);
+            }
+        }
+    </script>
 {% endblock %}

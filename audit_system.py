@@ -18,27 +18,29 @@ def init_audit_system():
     return True
 
 
-def log_action(username, action_type, target, details=None, old_value=None, new_value=None):
+def log_action(username, action_type, target, details=None, old_value=None, new_value=None, entry_id=None):
     """
     Записывает действие в систему аудита.
 
     :param username: Имя пользователя, совершившего действие
-    :param action_type: Тип действия (add, edit, delete, sync)
+    :param action_type: Тип действия (add, edit, delete, sync, backup_create, backup_restore, selective_restore)
     :param target: Цель действия (название записи или ID)
     :param details: Дополнительные детали
     :param old_value: Старое значение (для редактирования)
     :param new_value: Новое значение (для редактирования)
+    :param entry_id: ID записи (опционально)
     """
     log_entry = {
         "timestamp": datetime.now().isoformat(),
         "username": username,
         "action_type": action_type,
         "target": target,
-        "details": details or ""
+        "details": details or "",
+        "entry_id": entry_id  # Добавляем ID записи для более точного восстановления
     }
 
     # Добавляем информацию о старом и новом значении для действий редактирования
-    if action_type == "edit":
+    if action_type in ["edit", "delete"]:
         log_entry["old_value"] = old_value
         log_entry["new_value"] = new_value
 

@@ -8,7 +8,7 @@ from datetime import datetime
 import audit_system
 import bcrypt
 import schedule
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session, jsonify
 from werkzeug.utils import secure_filename
 from audit_system import init_audit_system, log_action
 from auth import auth
@@ -19,6 +19,7 @@ from Filter import FilterManager
 from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
 from simple_semantic_search_integration import initialize_search_system, perform_integrated_search
+from backup_system import backup_system, create_daily_backup
 init_audit_system()
 
 
@@ -57,6 +58,8 @@ def audit_log():
     action_type = request.args.get("type", "")
     username = request.args.get("user", "")
     query = request.args.get("query", "").strip().lower()
+    date_from = request.args.get("date_from", "")
+    date_to = request.args.get("date_to", "")
 
     # Загружаем логи
     logs = audit_system.load_audit_logs()
@@ -72,6 +75,15 @@ def audit_log():
         logs = [log for log in logs if query in log["details"].lower() or
                 query in log["target"].lower() or
                 query in log["username"].lower()]
+    
+    # Фильтруем по дате
+    if date_from:
+        from_date = datetime.strptime(date_from, '%Y-%m-%d')
+        logs = [log for log in logs if datetime.fromisoformat(log["timestamp"]) >= from_date]
+    
+    if date_to:
+        to_date = datetime.strptime(date_to, '%Y-%m-%d')
+        logs = [log for log in logs if datetime.fromisoformat(log["timestamp"]).date() <= to_date.date()]
 
     # Сортируем по времени (новые сначала)
     logs.sort(key=lambda x: x["timestamp"], reverse=True)
@@ -80,6 +92,118 @@ def audit_log():
     report = audit_system.generate_audit_report()
 
     return render_template("audit.html", logs=logs, report=report, format_date=format_date)
+
+
+@app.route("/backups")
+def list_backups():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    backups = backup_system.list_backups()
+    return render_template("backups.html", backups=backups)
+
+
+@app.route("/create-backup", methods=["POST"])
+def create_backup():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    backup_path = backup_system.create_backup()
+    log_action(session["user"]["username"], "backup_create", backup_path, "Создание резервной копии")
+    return jsonify({"success": True, "backup_path": backup_path})
+
+
+@app.route("/restore-backup/<filename>", methods=["POST"])
+def restore_backup(filename):
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    success = backup_system.restore_backup(filename)
+    if success:
+        log_action(session["user"]["username"], "backup_restore", filename, "Восстановление из резервной копии")
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "error": "Failed to restore backup"})
+
+
+@app.route("/restore-data", methods=["POST"])
+def restore_data():
+    """Restore specific data from audit logs within a time period"""
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    try:
+        data = request.get_json()
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
+        action_types = data.get("action_types", [])
+        targets = data.get("targets", [])
+        
+        # Load audit logs
+        logs = audit_system.load_audit_logs()
+        
+        # Filter logs based on criteria
+        filtered_logs = []
+        for log in logs:
+            log_time = datetime.fromisoformat(log["timestamp"])
+            
+            # Check date range
+            if date_from:
+                from_date = datetime.strptime(date_from, '%Y-%m-%d')
+                if log_time < from_date:
+                    continue
+            
+            if date_to:
+                to_date = datetime.strptime(date_to, '%Y-%m-%d')
+                if log_time.date() > to_date.date():
+                    continue
+            
+            # Check action types
+            if action_types and log["action_type"] not in action_types:
+                continue
+                
+            # Check targets
+            if targets and log["target"] not in targets:
+                continue
+                
+            filtered_logs.append(log)
+        
+        # Perform restoration based on logs
+        restored_items = []
+        for log in filtered_logs:
+            if log["action_type"] == "delete" and "old_value" in log:
+                # Restore deleted item
+                data = load_data()
+                # Check if item doesn't already exist
+                if not any(item.get("title") == log["old_value"].get("title") for item in data):
+                    data.append(log["old_value"])
+                    save_data(data)
+                    restored_items.append(log["target"])
+            elif log["action_type"] == "edit" and "old_value" in log:
+                # Revert edit to old value
+                data = load_data()
+                for i, item in enumerate(data):
+                    if item.get("title") == log["target"] or item.get("id") == log.get("entry_id"):
+                        data[i] = log["old_value"]
+                        break
+                save_data(data)
+                restored_items.append(log["target"])
+        
+        log_action(
+            session["user"]["username"], 
+            "selective_restore", 
+            f"{len(restored_items)} items", 
+            f"Восстановлено элементов: {', '.join(restored_items)}"
+        )
+        
+        return jsonify({
+            "success": True, 
+            "restored_items": restored_items,
+            "message": f"Восстановлено {len(restored_items)} элементов"
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 
 @app.route("/sync-edsoo")
