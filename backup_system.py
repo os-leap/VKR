@@ -83,6 +83,62 @@ class BackupSystem:
         except Exception as e:
             print(f"Error restoring backup: {e}")
             return False
+
+    def selective_restore(self, backup_filename, options):
+        """Perform selective restoration based on provided options"""
+        backup_path = self.backup_dir / backup_filename
+        if not backup_path.exists():
+            return {'success': False, 'error': 'Backup file does not exist'}
+            
+        try:
+            # Extract the backup to temporary location
+            temp_extract_dir = self.backup_dir / 'temp_selective_restore'
+            temp_extract_dir.mkdir(exist_ok=True)
+            
+            with zipfile.ZipFile(backup_path, 'r') as zipf:
+                zipf.extractall(temp_extract_dir)
+            
+            # Based on options, selectively copy files
+            success_count = 0
+            restored_files = []
+            
+            if options.get('knowledge_base', False):
+                source_knowledge_base = temp_extract_dir / 'knowledge_base.json'
+                if source_knowledge_base.exists():
+                    shutil.copy2(source_knowledge_base, 'knowledge_base.json')
+                    success_count += 1
+                    restored_files.append('knowledge_base.json')
+            
+            if options.get('audit_logs', False):
+                source_audit = temp_extract_dir / 'audit_logs.json'
+                if source_audit.exists():
+                    shutil.copy2(source_audit, 'audit_logs.json')
+                    success_count += 1
+                    restored_files.append('audit_logs.json')
+            
+            if options.get('users', False):
+                source_users = temp_extract_dir / 'users.json'
+                if source_users.exists():
+                    shutil.copy2(source_users, 'users.json')
+                    success_count += 1
+                    restored_files.append('users.json')
+            
+            # Clean up temporary directory
+            shutil.rmtree(temp_extract_dir)
+            
+            if success_count > 0:
+                return {
+                    'success': True, 
+                    'message': f'Successfully restored {success_count} components: {", ".join(restored_files)}'
+                }
+            else:
+                return {
+                    'success': False, 
+                    'error': 'No components were selected for restoration'
+                }
+        except Exception as e:
+            print(f"Error during selective restore: {e}")
+            return {'success': False, 'error': str(e)}
     
     def cleanup_old_backups(self, days_to_keep=7):
         """Remove backups older than specified days"""
