@@ -9,6 +9,16 @@
     </div>
 
     {% if backups %}
+    <div class="backup-selection">
+        <label for="backup-select">Выберите резервную копию для восстановления:</label>
+        <select id="backup-select" class="form-control">
+            {% for backup in backups %}
+            <option value="{{ backup.filename }}">{{ backup.filename }} ({{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} - {{ "%.2f"|format(backup.size/1024.0) }} KB)</option>
+            {% endfor %}
+        </select>
+        <button onclick="restoreSelectedBackup()" class="btn btn-warning">Восстановить выбранную копию</button>
+    </div>
+
     <table class="backup-table">
         <thead>
             <tr>
@@ -25,7 +35,6 @@
                 <td>{{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 <td>{{ "%.2f"|format(backup.size/1024.0) }} KB</td>
                 <td>
-                    <button onclick="restoreBackup('{{ backup.filename }}')" class="btn btn-warning">Восстановить</button>
                     <a href="#" onclick="confirmDelete('{{ backup.filename }}')" class="btn btn-danger">Удалить</a>
                 </td>
             </tr>
@@ -81,6 +90,38 @@
                 } catch (error) {
                     alert('Ошибка соединения при восстановлении: ' + error.message);
                 }
+            }
+        }
+        
+        async function restoreSelectedBackup() {
+            const selectElement = document.getElementById('backup-select');
+            const selectedFilename = selectElement.value;
+            
+            if(selectedFilename) {
+                if(confirm('Вы уверены, что хотите восстановить данные из резервной копии "' + selectedFilename + '"? Все текущие данные будут заменены.')) {
+                    try {
+                        const response = await fetch('/restore-backup/' + encodeURIComponent(selectedFilename), {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if(result.success) {
+                            alert('Восстановление завершено успешно из: ' + selectedFilename);
+                            // Redirect to home page after successful restore
+                            window.location.href = '/';
+                        } else {
+                            alert('Ошибка восстановления: ' + (result.error || 'Неизвестная ошибка'));
+                        }
+                    } catch (error) {
+                        alert('Ошибка соединения при восстановлении: ' + error.message);
+                    }
+                }
+            } else {
+                alert('Пожалуйста, выберите резервную копию для восстановления.');
             }
         }
         
