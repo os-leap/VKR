@@ -19,6 +19,7 @@
           <div class="admin-dropdown">
             <button class="admin-btn dropdown-toggle">🔑 Админ-панель</button>
             <div class="dropdown-content">
+              <a href="{{ url_for('statistics') }}" class="admin-tool">📊 Статистика</a>
               <a href="{{ url_for('sync_edsoo_route') }}" class="admin-tool">🔄 Проверить обновления</a>
               <a href="{{ url_for('audit_log') }}" class="admin-tool">📋 Сбор событий</a>
               <a href="{{ url_for('manage_filters') }}" class="admin-tool">🔧 Редактировать фильтры</a>
