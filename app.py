@@ -49,6 +49,20 @@ app.register_blueprint(auth, url_prefix="/auth")
 
 
 
+@app.route("/statistics")
+def statistics():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    # Генерируем отчет
+    report = audit_system.generate_audit_report()
+    
+    # Получаем статистику по темам
+    topic_stats = filter_manager.get_topic_statistics()
+
+    return render_template("statistics.html", report=report, topic_stats=topic_stats, format_date=format_date)
+
+
 @app.route("/audit")
 def audit_log():
     if "user" not in session or session["user"]["role"] != "admin":

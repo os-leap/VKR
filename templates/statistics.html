@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика системы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .stat-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .stat-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stat-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .back-to-admin {
+            margin-bottom: 20px;
+        }
+        
+        .back-to-admin a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .back-to-admin a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Статистика системы</h1>
+        
+        <div class="back-to-admin">
+            <a href="{{ url_for('index') }}">← Вернуться к главной</a>
+        </div>
+        
+        <div class="stats-container">
+            <!-- Общая статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>📊 Общая статистика</h3>
+                    <div class="stat-number">{{ report.total_actions }}</div>
+                    <p>Всего действий в системе</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>👥 Активные пользователи</h3>
+                    <div class="stat-number">{{ report.actions_by_user|length }}</div>
+                    <p>Пользователей совершили действия</p>
+                </div>
+                
+                {% if report.most_active_entry %}
+                <div class="stat-card">
+                    <h3>🎯 Самая активная запись</h3>
+                    <p><strong>{{ report.most_active_entry }}</strong></p>
+                    <p>Наиболее часто редактируемая/удаляемая запись</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Статистика по типам действий -->
+            <div class="stat-card">
+                <h3>📋 Статистика по типам действий</h3>
+                <ul class="stat-list">
+                    {% for action_type, count in report.actions_by_type.items() %}
+                    <li>
+                        <strong>{{ action_type }}:</strong> 
+                        <span class="stat-number">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Статистика по пользователям -->
+            <div class="stat-card">
+                <h3>👤 Статистика по пользователям</h3>
+                <ul class="stat-list">
+                    {% for username, count in report.actions_by_user.items() %}
+                    <li>
+                        <strong>{{ username }}:</strong> 
+                        <span class="stat-number">{{ count }}</span> действий
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Статистика по темам -->
+            <div class="stat-card">
+                <h3>🏷️ Статистика по темам</h3>
+                <ul class="stat-list">
+                    {% for topic, count in topic_stats.items() %}
+                    <li>
+                        <strong>{{ topic }}:</strong> 
+                        <span class="stat-number">{{ count }}</span> записей
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Последние действия -->
+            <div class="stat-card">
+                <h3>🆕 Последние 10 действий</h3>
+                <ul class="stat-list">
+                    {% for log in report.recent_actions %}
+                    <li>
+                        <strong>[{{ format_date(log.timestamp) }}] {{ log.username }}</strong>: 
+                        {{ log.action_type }} - {{ log.target }}
+                        {% if log.details %}<br><small>{{ log.details }}</small>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
