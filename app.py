@@ -126,6 +126,22 @@ def restore_backup(filename):
         return jsonify({"success": False, "error": "Failed to restore backup"})
 
 
+@app.route("/selective-restore/<filename>", methods=["POST"])
+def selective_restore(filename):
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    try:
+        options = request.get_json()
+        result = backup_system.selective_restore(filename, options)
+        
+        if result['success']:
+            log_action(session["user"]["username"], "selective_restore", filename, f"Выборочное восстановление: {result['message']}")
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 @app.route("/restore-data", methods=["POST"])
 def restore_data():
     """Restore specific data from audit logs within a time period"""

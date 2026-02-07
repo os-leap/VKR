@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Управление резервными копиями</h2>
+    <h2>Управление резервными копиями и восстановление данных</h2>
 
     <div class="backup-controls">
         <button onclick="createBackup()" class="btn btn-primary">Создать новую резервную копию</button>
@@ -10,6 +10,10 @@
 
     {% if backups %}
     <div class="backup-selection">
+        <div class="section-header">
+            <h3>Восстановление всей базы данных</h3>
+            <p class="help-text">Выберите резервную копию для полного восстановления всей базы данных</p>
+        </div>
         <label for="backup-select">Выберите резервную копию для восстановления:</label>
         <select id="backup-select" class="form-control">
             {% for backup in backups %}
@@ -19,30 +23,68 @@
         <button onclick="restoreSelectedBackup()" class="btn btn-warning">Восстановить выбранную копию</button>
     </div>
 
-    <table class="backup-table">
-        <thead>
-            <tr>
-                <th>Имя файла</th>
-                <th>Дата создания</th>
-                <th>Размер</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for backup in backups %}
-            <tr>
-                <td>{{ backup.filename }}</td>
-                <td>{{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                <td>{{ "%.2f"|format(backup.size/1024.0) }} KB</td>
-                <td>
-                    <a href="#" onclick="confirmDelete('{{ backup.filename }}')" class="btn btn-danger">Удалить</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="selective-recovery">
+        <div class="section-header">
+            <h3>Выборочное восстановление данных</h3>
+            <p class="help-text">Восстановите конкретные записи из резервной копии без перезаписи всей базы данных</p>
+        </div>
+        <div class="selective-controls">
+            <label for="selective-backup-select">Выберите резервную копию:</label>
+            <select id="selective-backup-select" class="form-control">
+                <option value="">-- Выберите резервную копию --</option>
+                {% for backup in backups %}
+                <option value="{{ backup.filename }}">{{ backup.filename }} ({{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }} - {{ "%.2f"|format(backup.size/1024.0) }} KB)</option>
+                {% endfor %}
+            </select>
+            <div class="recovery-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="restore-knowledge-base" checked>
+                    <label for="restore-knowledge-base">Восстановить базу знаний</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="restore-audit-logs" checked>
+                    <label for="restore-audit-logs">Восстановить логи аудита</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="restore-users" checked>
+                    <label for="restore-users">Восстановить пользователей</label>
+                </div>
+            </div>
+            <button onclick="performSelectiveRecovery()" class="btn btn-info">Выполнить выборочное восстановление</button>
+        </div>
+    </div>
+
+    <div class="backup-list">
+        <h3>Список доступных резервных копий</h3>
+        <table class="backup-table">
+            <thead>
+                <tr>
+                    <th>Имя файла</th>
+                    <th>Дата создания</th>
+                    <th>Размер</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>{{ backup.filename }}</td>
+                    <td>{{ backup.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ "%.2f"|format(backup.size/1024.0) }} KB</td>
+                    <td>
+                        <a href="#" onclick="restoreBackup('{{ backup.filename }}')" class="btn btn-success btn-sm">Восстановить полностью</a>
+                        <a href="#" onclick="confirmDelete('{{ backup.filename }}')" class="btn btn-danger btn-sm">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <p>Нет доступных резервных копий.</p>
+    <div class="no-backups">
+        <p>Нет доступных резервных копий.</p>
+        <button onclick="createBackup()" class="btn btn-primary">Создать первую резервную копию</button>
+    </div>
     {% endif %}
 
     <script>
@@ -122,6 +164,50 @@
                 }
             } else {
                 alert('Пожалуйста, выберите резервную копию для восстановления.');
+            }
+        }
+
+        async function performSelectiveRecovery() {
+            const backupSelect = document.getElementById('selective-backup-select');
+            const selectedBackup = backupSelect.value;
+            
+            if(!selectedBackup) {
+                alert('Пожалуйста, выберите резервную копию для выборочного восстановления.');
+                return;
+            }
+
+            // Get selected recovery options
+            const restoreKnowledgeBase = document.getElementById('restore-knowledge-base').checked;
+            const restoreAuditLogs = document.getElementById('restore-audit-logs').checked;
+            const restoreUsers = document.getElementById('restore-users').checked;
+
+            const recoveryOptions = {
+                knowledge_base: restoreKnowledgeBase,
+                audit_logs: restoreAuditLogs,
+                users: restoreUsers
+            };
+
+            if(confirm('Вы уверены, что хотите выполнить выборочное восстановление из резервной копии "' + selectedBackup + '" с выбранными параметрами?')) {
+                try {
+                    const response = await fetch('/selective-restore/' + encodeURIComponent(selectedBackup), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(recoveryOptions)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if(result.success) {
+                        alert('Выборочное восстановление завершено успешно из: ' + selectedBackup);
+                        location.reload();
+                    } else {
+                        alert('Ошибка восстановления: ' + (result.error || 'Неизвестная ошибка'));
+                    }
+                } catch (error) {
+                    alert('Ошибка соединения при восстановлении: ' + error.message);
+                }
             }
         }
         

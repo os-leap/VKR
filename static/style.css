@@ -558,6 +558,22 @@ li {
     gap: 10px;
 }
 
+.section-header {
+    margin-bottom: 15px;
+}
+
+.section-header h3 {
+    color: #007BFF;
+    margin-bottom: 5px;
+    font-size: 1.3em;
+}
+
+.help-text {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-bottom: 0;
+}
+
 .backup-selection {
     background-color: #f8f9fa;
     padding: 20px;
@@ -566,14 +582,53 @@ li {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.backup-selection label {
+.selective-recovery {
+    background-color: #e8f5e9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+}
+
+.selective-controls {
+    margin-top: 15px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+.recovery-options {
+    margin: 15px 0;
+}
+
+.backup-list {
+    margin-top: 30px;
+}
+
+.backup-selection label,
+.selective-controls label {
     display: block;
     margin-bottom: 10px;
     font-weight: bold;
     color: #495057;
 }
 
-.backup-selection select {
+.backup-selection select,
+.selective-controls select {
     width: 100%;
     padding: 10px;
     border: 1px solid #ced4da;
@@ -583,7 +638,8 @@ li {
     background-color: white;
 }
 
-.backup-selection button {
+.backup-selection button,
+.selective-controls button {
     width: 100%;
     padding: 10px;
     font-size: 16px;
@@ -618,6 +674,23 @@ li {
 
 .backup-table tr:hover {
     background-color: #f8f9fa;
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.85em;
+    margin: 0 2px;
+}
+
+.no-backups {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.no-backups p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    color: #6c757d;
 }
 
 .form-control {
