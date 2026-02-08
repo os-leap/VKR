@@ -722,8 +722,8 @@ def delete_entry(id):
     
     data.remove(entry)
     save_data(data)
-    # Очищаем кэш фильтров после удаления записи
-    advanced_filter_manager.clear_cache()
+    # Обновляем данные в менеджере фильтров после удаления записи
+    advanced_filter_manager.data = data
     return redirect(url_for("index"))
 
 
@@ -942,8 +942,8 @@ def delete_entry_by_id(entry_id):
             os.remove(old_path)
     del data[entry_index]
     save_data(data)
-    # Очищаем кэш фильтров после удаления записи
-    advanced_filter_manager.clear_cache()
+    # Обновляем данные в менеджере фильтров после удаления записи
+    advanced_filter_manager.data = data
     return redirect(url_for("index"))
 
 
