@@ -773,6 +773,9 @@ def search_entry_get():
 
     results = []
     
+    # Извлекаем параметры фильтрации из поискового запроса
+    extracted_class, extracted_subject = extract_filters_from_query(query)
+    
     # Сначала выполняем синтаксический поиск
     if search_type == "semantic":
         # Используем семантический поиск
@@ -780,6 +783,17 @@ def search_entry_get():
     else:
         # Используем синтаксический поиск
         for entry in data:
+            # Применяем извлеченные фильтры
+            if extracted_class:
+                entry_class = entry.get("education_info", {}).get("class", "")
+                if entry_class != extracted_class:
+                    continue
+            
+            if extracted_subject:
+                entry_subject = entry.get("education_info", {}).get("subject", "")
+                if entry_subject != extracted_subject:
+                    continue
+
             # Фильтруем по теме, если выбрана конкретная тема
             if selected_topic != "Все темы" and selected_topic:
                 if entry.get("topic", "Без темы") != selected_topic:
@@ -802,6 +816,63 @@ def search_entry_get():
     return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
                            search_query=query, topic_stats=topic_stats, search_type=search_type)
+
+
+def extract_filters_from_query(query):
+    """
+    Извлекает информацию о классе и предмете из поискового запроса.
+    Например, из запроса "задания для 1 класса по французскому" извлекает класс "1" и предмет "Французский язык".
+    """
+    import re
+    
+    # Приводим запрос к нижнему регистру для поиска
+    lower_query = query.lower()
+    
+    # Ищем паттерн "для X класса" или "X класс"
+    class_pattern = r'(?:для\s+)?(\d+)\s*(?:-й|-го|-ый|-ой|-я)?\s*класс'
+    class_match = re.search(class_pattern, lower_query)
+    extracted_class = class_match.group(1) if class_match else None
+    
+    # Словарь соответствия названий предметов
+    subject_mapping = {
+        'русский': 'Русский язык',
+        'английский': 'Английский язык',
+        'немецкий': 'Немецкий язык',
+        'французский': 'Французский язык',
+        'математика': 'Математика',
+        'литература': 'Литература',
+        'история': 'История',
+        'география': 'География',
+        'биология': 'Биология',
+        'химия': 'Химия',
+        'физика': 'Физика',
+        'информатика': 'Информатика',
+        'обществознание': 'Обществознание',
+        'экономика': 'Экономика',
+        'право': 'Право',
+        'обж': 'ОБЖ',
+        'физкультура': 'Физкультура',
+        'изо': 'ИЗО',
+        'музыка': 'Музыка',
+        'технология': 'Технология'
+    }
+    
+    # Ищем предмет в запросе
+    extracted_subject = None
+    for key, value in subject_mapping.items():
+        if key in lower_query:
+            extracted_subject = value
+            break
+    
+    # Если в запросе есть "по" + название предмета
+    if not extracted_subject:
+        for key, value in subject_mapping.items():
+            subject_pattern = r'по\s+' + key
+            if re.search(subject_pattern, lower_query):
+                extracted_subject = value
+                break
+
+    return extracted_class, extracted_subject
 
 
 def generate_title_from_content(content):
