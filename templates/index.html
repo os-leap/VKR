@@ -125,7 +125,7 @@
         <span class="filter-badge">Предмет: {{ selected_subject }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, topic=selected_topic, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
       {% if selected_topic and selected_topic != 'Все темы' %}
-        <span class="filter-badge">Тема: {{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, date_from=date_from, date_to=date_to) }}">×</a></span>
+        <span class="filter-badge">{{ selected_topic }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, date_from=date_from, date_to=date_to) }}">×</a></span>
       {% endif %}
       {% if date_from %}
         <span class="filter-badge">Дата от: {{ date_from }} <a href="{{ url_for('index', class=selected_class, parallel=selected_parallel, subject=selected_subject, topic=selected_topic, date_to=date_to) }}">×</a></span>

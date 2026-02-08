@@ -659,14 +659,14 @@ li {
 }
 
 .btn-add.prominent {
-  background-color: #ff6b35;
+  background-color: #28a745;
   font-weight: bold;
-  box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
   transform: scale(1.05);
 }
 
 .btn-add.prominent:hover {
-  background-color: #e55a2a;
+  background-color: #218838;
   transform: scale(1.1);
 }
 
