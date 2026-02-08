@@ -769,12 +769,14 @@ def search_entry_get():
     # Загружаем данные (это также инициализирует систему семантического поиска)
     data = load_data()
 
+    results = []
+    
+    # Сначала выполняем синтаксический поиск
     if search_type == "semantic":
         # Используем семантический поиск
         results = perform_integrated_search(query, search_type="semantic", top_k=20)
     else:
         # Используем синтаксический поиск
-        results = []
         for entry in data:
             # Фильтруем по теме, если выбрана конкретная тема
             if selected_topic != "Все темы" and selected_topic:
@@ -787,6 +789,10 @@ def search_entry_get():
 
             if search_in_title or search_in_content:
                 results.append(entry)
+    
+    # Если синтаксический поиск не дал результатов, выполняем семантический поиск
+    if not results and search_type == "syntax":
+        results = perform_integrated_search(query, search_type="semantic", top_k=20)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()

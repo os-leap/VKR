@@ -41,17 +41,14 @@
         <input type="hidden" name="class" value="{{ selected_class }}">
         <input type="hidden" name="parallel" value="{{ selected_parallel }}">
         <input type="hidden" name="subject" value="{{ selected_subject }}">
-        <select name="search_type" class="search-type-select">
-          <option value="syntax" {% if search_type == 'syntax' or not search_type %}selected{% endif %}>Синтаксический поиск</option>
-          <option value="semantic" {% if search_type == 'semantic' %}selected{% endif %}>Семантический поиск</option>
-        </select>
         <button type="submit">Искать</button>
       </form>
-      <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
+      <a href="{{ url_for('add_entry') }}" class="btn-add prominent">Добавить запись</a>
+      <button type="button" class="toggle-filters-btn" onclick="toggleFilters()">Показать/Скрыть фильтры</button>
     </div>
 
     <!-- Панель расширенной фильтрации -->
-    <div class="advanced-filter-panel">
+    <div class="advanced-filter-panel hidden" id="advancedFilterPanel">
       <h3>Фильтры</h3>
       <form method="GET" action="{{ url_for('index') }}">
         <div class="filter-grid">
@@ -228,6 +225,11 @@
         }
       });
     });
+
+    function toggleFilters() {
+      const filterPanel = document.getElementById('advancedFilterPanel');
+      filterPanel.classList.toggle('hidden');
+    }
   </script>
 </body>
 </html>
