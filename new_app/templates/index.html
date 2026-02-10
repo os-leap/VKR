@@ -45,8 +45,13 @@
       <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
     </div>
 
+    <!-- Кнопка для показа/скрытия фильтров -->
+    <div class="filter-toggle-container">
+      <button type="button" class="filter-toggle-btn" onclick="toggleFilters()">Показать фильтры</button>
+    </div>
+    
     <!-- Панель расширенной фильтрации -->
-    <div class="advanced-filter-panel">
+    <div class="advanced-filter-panel" style="display: none;" id="advancedFilterPanel">
       <h3>Фильтры</h3>
       <form method="GET" action="{{ url_for('index') }}">
         <div class="filter-row">
@@ -207,6 +212,20 @@
         }
       });
     });
+  </script>
+  <script>
+    function toggleFilters() {
+      const filterPanel = document.getElementById('advancedFilterPanel');
+      const filterButton = document.querySelector('.filter-toggle-btn');
+      
+      if (filterPanel.style.display === 'none') {
+        filterPanel.style.display = 'block';
+        filterButton.textContent = 'Скрыть фильтры';
+      } else {
+        filterPanel.style.display = 'none';
+        filterButton.textContent = 'Показать фильтры';
+      }
+    }
   </script>
 </body>
 </html>
