@@ -1,1 +1,43 @@
-Nothing needs to be added to .gitignore since the changes only include source files (.py and .html) without any build artifacts, dependencies, or temporary files.
+```gitignore
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.env
+.env.local
+.env.*
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+```
+
+Wait, I need to reconsider. The only modified file is `simple_semantic_search.py` which appears to be a source code file. There are no build artifacts, dependencies, or temporary files in the change list that would require adding ignore rules.
+
+(empty)
