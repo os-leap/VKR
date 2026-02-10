@@ -49,20 +49,6 @@ app.register_blueprint(auth, url_prefix="/auth")
 
 
 
-@app.route("/statistics")
-def statistics():
-    if "user" not in session or session["user"]["role"] != "admin":
-        return "Доступ запрещён", 403
-    
-    # Генерируем отчет
-    report = audit_system.generate_audit_report()
-    
-    # Получаем статистику по темам
-    topic_stats = filter_manager.get_topic_statistics()
-
-    return render_template("statistics.html", report=report, topic_stats=topic_stats, format_date=format_date)
-
-
 @app.route("/audit")
 def audit_log():
     if "user" not in session or session["user"]["role"] != "admin":
@@ -736,6 +722,8 @@ def delete_entry(id):
     
     data.remove(entry)
     save_data(data)
+    # Обновляем данные в менеджере фильтров после удаления записи
+    advanced_filter_manager.data = data
     return redirect(url_for("index"))
 
 
@@ -783,13 +771,29 @@ def search_entry_get():
     # Загружаем данные (это также инициализирует систему семантического поиска)
     data = load_data()
 
+    results = []
+    
+    # Извлекаем параметры фильтрации из поискового запроса
+    extracted_class, extracted_subject = extract_filters_from_query(query)
+    
+    # Сначала выполняем синтаксический поиск
     if search_type == "semantic":
         # Используем семантический поиск
         results = perform_integrated_search(query, search_type="semantic", top_k=20)
     else:
         # Используем синтаксический поиск
-        results = []
         for entry in data:
+            # Применяем извлеченные фильтры
+            if extracted_class:
+                entry_class = entry.get("education_info", {}).get("class", "")
+                if entry_class != extracted_class:
+                    continue
+            
+            if extracted_subject:
+                entry_subject = entry.get("education_info", {}).get("subject", "")
+                if entry_subject != extracted_subject:
+                    continue
+
             # Фильтруем по теме, если выбрана конкретная тема
             if selected_topic != "Все темы" and selected_topic:
                 if entry.get("topic", "Без темы") != selected_topic:
@@ -801,6 +805,10 @@ def search_entry_get():
 
             if search_in_title or search_in_content:
                 results.append(entry)
+    
+    # Если синтаксический поиск не дал результатов, выполняем семантический поиск
+    if not results and search_type == "syntax":
+        results = perform_integrated_search(query, search_type="semantic", top_k=20)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
@@ -808,6 +816,63 @@ def search_entry_get():
     return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
                            search_query=query, topic_stats=topic_stats, search_type=search_type)
+
+
+def extract_filters_from_query(query):
+    """
+    Извлекает информацию о классе и предмете из поискового запроса.
+    Например, из запроса "задания для 1 класса по французскому" извлекает класс "1" и предмет "Французский язык".
+    """
+    import re
+    
+    # Приводим запрос к нижнему регистру для поиска
+    lower_query = query.lower()
+    
+    # Ищем паттерн "для X класса" или "X класс"
+    class_pattern = r'(?:для\s+)?(\d+)\s*(?:-й|-го|-ый|-ой|-я)?\s*класс'
+    class_match = re.search(class_pattern, lower_query)
+    extracted_class = class_match.group(1) if class_match else None
+    
+    # Словарь соответствия названий предметов
+    subject_mapping = {
+        'русский': 'Русский язык',
+        'английский': 'Английский язык',
+        'немецкий': 'Немецкий язык',
+        'французский': 'Французский язык',
+        'математика': 'Математика',
+        'литература': 'Литература',
+        'история': 'История',
+        'география': 'География',
+        'биология': 'Биология',
+        'химия': 'Химия',
+        'физика': 'Физика',
+        'информатика': 'Информатика',
+        'обществознание': 'Обществознание',
+        'экономика': 'Экономика',
+        'право': 'Право',
+        'обж': 'ОБЖ',
+        'физкультура': 'Физкультура',
+        'изо': 'ИЗО',
+        'музыка': 'Музыка',
+        'технология': 'Технология'
+    }
+    
+    # Ищем предмет в запросе
+    extracted_subject = None
+    for key, value in subject_mapping.items():
+        if key in lower_query:
+            extracted_subject = value
+            break
+    
+    # Если в запросе есть "по" + название предмета
+    if not extracted_subject:
+        for key, value in subject_mapping.items():
+            subject_pattern = r'по\s+' + key
+            if re.search(subject_pattern, lower_query):
+                extracted_subject = value
+                break
+
+    return extracted_class, extracted_subject
 
 
 def generate_title_from_content(content):
@@ -948,6 +1013,8 @@ def delete_entry_by_id(entry_id):
             os.remove(old_path)
     del data[entry_index]
     save_data(data)
+    # Обновляем данные в менеджере фильтров после удаления записи
+    advanced_filter_manager.data = data
     return redirect(url_for("index"))
 
 
