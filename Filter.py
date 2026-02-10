@@ -100,11 +100,42 @@ class FilterManager:
             education_info = entry.get('education_info', {})
             if education_info:
                 class_info = education_info.get('class', '')
+                parallel_info = education_info.get('parallel', 'все')  # Если параллель не указана, считаем что "все"
                 subject_info = education_info.get('subject', '')
-                text_to_search += f" {class_info} {subject_info}".lower()
+                text_to_search += f" {class_info} {parallel_info} {subject_info}".lower()
             
             # Проверяем, содержит ли текст хотя бы одно из ключевых слов
             if any(keyword.lower() in text_to_search for keyword in keywords):
                 results.append(entry)
+        
+        return results
+
+    def advanced_search_by_education_tags(self, class_level=None, parallel="все", subject=None):
+        """
+        Расширенный поиск по образовательным меткам
+        class_level: уровень класса (например, "1")
+        parallel: параллель класса (по умолчанию "все")
+        subject: предмет (например, "Французский язык")
+        Возвращает список записей, соответствующих критериям
+        """
+        results = []
+        
+        for entry in self.data:
+            education_info = entry.get('education_info', {})
+            
+            # Проверяем совпадение по классу
+            if class_level and str(education_info.get('class', '')) != str(class_level):
+                continue
+            
+            # Проверяем совпадение по предмету
+            if subject and education_info.get('subject', '').lower() != subject.lower():
+                continue
+            
+            # Для параллели "все" подходит любая параллель, иначе проверяем точное совпадение
+            entry_parallel = education_info.get('parallel', 'все')
+            if parallel != "все" and entry_parallel != parallel:
+                continue
+            
+            results.append(entry)
         
         return results
