@@ -130,6 +130,214 @@ def restore_data_page():
     
     return render_template("restore_data.html")
 
+@app.route("/get-changed-records", methods=["POST"])
+def get_changed_records():
+    """Get records with changes within a time period"""
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    try:
+        data = request.get_json()
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
+        
+        # Load audit logs
+        logs = audit_system.load_audit_logs()
+        
+        # Filter logs based on date range
+        filtered_logs = []
+        for log in logs:
+            log_time = datetime.fromisoformat(log["timestamp"])
+            
+            # Check date range
+            if date_from:
+                from_date = datetime.strptime(date_from, '%Y-%m-%d')
+                if log_time < from_date:
+                    continue
+            
+            if date_to:
+                to_date = datetime.strptime(date_to, '%Y-%m-%d')
+                if log_time.date() > to_date.date():
+                    continue
+            
+            # Add to filtered logs
+            filtered_logs.append(log)
+        
+        # Format the records for the frontend
+        records = []
+        for log in filtered_logs:
+            record = {
+                "id": log.get("id", str(uuid.uuid4())),
+                "timestamp": format_date(log["timestamp"]),
+                "action_type": log["action_type"],
+                "title": log.get("target", ""),
+                "description": log.get("details", ""),
+                "old_value": log.get("old_value", None),
+                "new_value": log.get("new_value", None),
+                "backup_id": log.get("backup_id", "")
+            }
+            records.append(record)
+        
+        return jsonify({
+            "success": True,
+            "records": records
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/perform-action", methods=["POST"])
+def perform_action():
+    """Perform selected action on a record"""
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    try:
+        data = request.get_json()
+        action = data.get("action")
+        record_id = data.get("record_id")
+        backup_id = data.get("backup_id", "")
+        
+        # Find the corresponding log entry
+        logs = audit_system.load_audit_logs()
+        target_log = None
+        for log in logs:
+            if log.get("id") == record_id or str(log.get("id")) == str(record_id):
+                target_log = log
+                break
+        
+        if not target_log:
+            return jsonify({"success": False, "error": "Лог не найден"})
+        
+        # Perform the selected action
+        if action == "restore":
+            if target_log["action_type"] == "delete" and "old_value" in target_log:
+                # Restore deleted item
+                knowledge_data = load_data()
+                # Check if item doesn't already exist
+                if not any(item.get("title") == target_log["old_value"].get("title") for item in knowledge_data):
+                    knowledge_data.append(target_log["old_value"])
+                    save_data(knowledge_data)
+                    log_action(
+                        session["user"]["username"], 
+                        "restore", 
+                        target_log["target"], 
+                        f"Восстановлена удаленная запись: {target_log['target']}"
+                    )
+                    return jsonify({
+                        "success": True,
+                        "message": f"Запись '{target_log['target']}' успешно восстановлена"
+                    })
+                else:
+                    return jsonify({
+                        "success": False,
+                        "error": "Запись уже существует"
+                    })
+            elif target_log["action_type"] == "edit" and "old_value" in target_log:
+                # Restore from backup (if available) or old value
+                knowledge_data = load_data()
+                for i, item in enumerate(knowledge_data):
+                    if item.get("title") == target_log["target"] or item.get("id") == target_log.get("entry_id"):
+                        knowledge_data[i] = target_log["old_value"]
+                        break
+                save_data(knowledge_data)
+                log_action(
+                    session["user"]["username"], 
+                    "restore", 
+                    target_log["target"], 
+                    f"Восстановлена запись из резервной копии: {target_log['target']}"
+                )
+                return jsonify({
+                    "success": True,
+                    "message": f"Запись '{target_log['target']}' успешно восстановлена из резервной копии"
+                })
+            else:
+                # General restore action - try to restore from old_value if available
+                if "old_value" in target_log:
+                    knowledge_data = load_data()
+                    existing_index = -1
+                    for i, item in enumerate(knowledge_data):
+                        if item.get("title") == target_log["target"] or item.get("id") == target_log.get("entry_id"):
+                            existing_index = i
+                            break
+                    
+                    if existing_index != -1:
+                        knowledge_data[existing_index] = target_log["old_value"]
+                    else:
+                        knowledge_data.append(target_log["old_value"])
+                    
+                    save_data(knowledge_data)
+                    log_action(
+                        session["user"]["username"], 
+                        "restore", 
+                        target_log["target"], 
+                        f"Восстановлена запись: {target_log['target']}"
+                    )
+                    return jsonify({
+                        "success": True,
+                        "message": f"Запись '{target_log['target']}' успешно восстановлена"
+                    })
+        
+        elif action == "revert":
+            if target_log["action_type"] == "edit" and "old_value" in target_log:
+                # Revert edit to old value
+                knowledge_data = load_data()
+                for i, item in enumerate(knowledge_data):
+                    if item.get("title") == target_log["target"] or item.get("id") == target_log.get("entry_id"):
+                        knowledge_data[i] = target_log["old_value"]
+                        break
+                save_data(knowledge_data)
+                log_action(
+                    session["user"]["username"], 
+                    "revert", 
+                    target_log["target"], 
+                    f"Отменено редактирование записи: {target_log['target']}"
+                )
+                return jsonify({
+                    "success": True,
+                    "message": f"Изменения в записи '{target_log['target']}' успешно отменены"
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Для этого типа действия невозможно отменить изменение"
+                })
+        
+        elif action == "delete":
+            if target_log["action_type"] == "create":
+                # Remove the created item
+                knowledge_data = load_data()
+                knowledge_data = [item for item in knowledge_data if not (
+                    item.get("title") == target_log["target"] or 
+                    item.get("id") == target_log.get("entry_id")
+                )]
+                save_data(knowledge_data)
+                log_action(
+                    session["user"]["username"], 
+                    "delete", 
+                    target_log["target"], 
+                    f"Удалена запись: {target_log['target']}"
+                )
+                return jsonify({
+                    "success": True,
+                    "message": f"Запись '{target_log['target']}' успешно удалена"
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Для этого типа действия невозможно выполнить удаление"
+                })
+        
+        return jsonify({
+            "success": False,
+            "error": "Неизвестное действие"
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 @app.route("/restore-data", methods=["POST"])
 def restore_data():
     """Restore specific data from audit logs within a time period"""
