@@ -548,6 +548,48 @@ li {
     margin-bottom: 20px;
 }
 
+/* Стили для кнопки добавления */
+.btn-add {
+    display: inline-block;
+    padding: 12px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+/* Стили для переключателя фильтров */
+.filters-toggle-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.filters-toggle-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Стили для скрытия/показа фильтров */
+.advanced-filter-panel.hidden {
+    display: none;
+}
+
 /* Стили для страницы резервных копий */
 .backup-controls {
     display: flex;

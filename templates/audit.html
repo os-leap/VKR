@@ -42,60 +42,11 @@
         </form>
     </div>
 
-    <!-- Кнопка управления резервными копиями -->
     <div class="backup-controls">
         <a href="{{ url_for('list_backups') }}" class="btn btn-primary">Управление резервными копиями</a>
         <button onclick="createBackup()" class="btn btn-secondary">Создать резервную копию</button>
+        <a href="{{ url_for('restore_data_page') }}" class="btn btn-restore">Восстановление данных</a>
     </div>
-
-    <!-- Блок выборочного восстановления -->
-    <div class="restore-controls">
-        <h3>Выборочное восстановление данных</h3>
-        <form id="restore-form" class="restore-form">
-            <div class="restore-group">
-                <label for="restore_date_from">Период с:</label>
-                <input type="date" id="restore_date_from" name="date_from" required>
-            </div>
-            <div class="restore-group">
-                <label for="restore_date_to">по:</label>
-                <input type="date" id="restore_date_to" name="date_to" required>
-            </div>
-            <div class="restore-group">
-                <label for="restore_action_types">Типы действий:</label>
-                <select id="restore_action_types" name="action_types" multiple size="4">
-                    <option value="delete">Восстановить удаленные записи</option>
-                    <option value="edit">Отменить редактирование</option>
-                </select>
-            </div>
-            <div class="restore-group">
-                <label for="restore_targets">Названия записей для восстановления (через запятую):</label>
-                <input type="text" id="restore_targets" name="targets" placeholder="Например: Заголовок1, Заголовок2">
-            </div>
-            <button type="submit" class="btn btn-warning">Восстановить выбранные данные</button>
-        </form>
-        <div id="restore-result"></div>
-    </div>
-
-    <!-- Статистика -->
-    {% if report %}
-    <div class="audit-report">
-        <h3>Статистика</h3>
-        <p>Всего действий: {{ report.total_actions }}</p>
-        <p>Действия по типам:
-            {% for action_type, count in report.actions_by_type.items() %}
-                {{ action_type }}: {{ count }}{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </p>
-        <p>Действия по пользователям:
-            {% for user, count in report.actions_by_user.items() %}
-                {{ user }}: {{ count }}{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </p>
-        {% if report.most_active_entry %}
-        <p>Самая активная запись: {{ report.most_active_entry }}</p>
-        {% endif %}
-    </div>
-    {% endif %}
 
     <!-- Таблица логов -->
     <table class="audit-table">
