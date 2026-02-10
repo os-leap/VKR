@@ -43,9 +43,9 @@
     </div>
 
     <div class="backup-controls">
-        <a href="{{ url_for('list_backups') }}" class="btn btn-primary">Управление резервными копиями</a>
-        <button onclick="createBackup()" class="btn btn-secondary">Создать резервную копию</button>
-        <a href="{{ url_for('restore_data_page') }}" class="btn btn-restore">Восстановление данных</a>
+        <a href="{{ url_for('list_backups') }}" class="btn btn-primary btn-manage">Управление резервными копиями</a>
+        <button onclick="createBackup()" class="btn btn-secondary btn-create">Создать резервную копию</button>
+        <a href="{{ url_for('restore_data_page') }}" class="btn btn-restore btn-restore-page">Восстановление данных</a>
     </div>
 
     <!-- Таблица логов -->
