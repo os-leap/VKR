@@ -167,9 +167,13 @@ class SimpleSemanticSearchEngine:
         
         # Если нашли метки, ищем соответствующие документы
         for idx, entry in enumerate(self.entries_data):
+            # Проверяем новые метки (образовательная информация)
             edu_info = entry.get("education_info", {})
             entry_class = str(edu_info.get("class")) if edu_info.get("class") else None
             entry_subject = edu_info.get("subject", "").lower()
+            
+            # Также проверяем старое поле topic
+            entry_topic = entry.get("topic", "").lower()
             
             # Если есть совпадение по классу и предмету, добавляем документ
             if ((class_match and entry_class == class_match) and 
@@ -179,6 +183,9 @@ class SimpleSemanticSearchEngine:
                 results.append((idx, 0.8))  # Средний вес для совпадения только по классу
             elif subject_match and subject_match in entry_subject:
                 results.append((idx, 0.8))  # Средний вес для совпадения только по предмету
+            # Также проверяем совпадение с темой (topic)
+            elif subject_match and subject_match in entry_topic:
+                results.append((idx, 0.6))  # Немного меньший вес для совпадения по теме
         
         return results
     

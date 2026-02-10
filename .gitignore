@@ -1,3 +1,4 @@
-(label_search_example.md is just a markdown file, which is source content that shouldn't be ignored)
-
-# No changes needed - source file only
+```
+__pycache__/
+*.pyc
+```
