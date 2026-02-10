@@ -9,6 +9,7 @@ from nltk.stem import WordNetLemmatizer
 import string
 import pickle
 import os
+import json
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -39,13 +40,15 @@ class SimpleSemanticSearchEngine:
     используя TF-IDF векторайзер и косинусное сходство. Не требует GPU.
     """
     
-    def __init__(self):
+    def __init__(self, knowledge_base_file="knowledge_base.json"):
         self.documents = []
         self.processed_docs = []
         self.vectorizer = None
         self.doc_vectors = None
         self.lemmatizer = WordNetLemmatizer()
         self.stop_words = set(stopwords.words('english')).union(set(stopwords.words('russian')))
+        self.knowledge_base_file = knowledge_base_file
+        self.entries_data = []  # Добавляем хранилище для данных записей
         
     def preprocess_text(self, text: str) -> str:
         """
@@ -67,7 +70,7 @@ class SimpleSemanticSearchEngine:
         
         return ' '.join(tokens)
     
-    def add_documents(self, documents: List[str]):
+    def add_documents(self, documents: List[str], entries_data: List[dict] = None):
         """
         Добавление документов в поисковый индекс.
         """
@@ -77,6 +80,25 @@ class SimpleSemanticSearchEngine:
         # Создание векторизатора и векторов документов
         self.vectorizer = TfidfVectorizer()
         self.doc_vectors = self.vectorizer.fit_transform(self.processed_docs)
+        
+        # Сохраняем данные записей, если они предоставлены
+        if entries_data is not None:
+            self.entries_data = entries_data
+        else:
+            # Если entries_data не предоставлены, загружаем из файла
+            self.entries_data = self._load_entries_data()
+    
+    def _load_entries_data(self):
+        """Загружает данные записей из JSON файла"""
+        try:
+            with open(self.knowledge_base_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print(f"Файл {self.knowledge_base_file} не найден.")
+            return []
+        except json.JSONDecodeError:
+            print(f"Ошибка чтения JSON из файла {self.knowledge_base_file}.")
+            return []
     
     def search(self, query: str, top_k: int = 5) -> List[Tuple[int, float]]:
         """
@@ -103,6 +125,82 @@ class SimpleSemanticSearchEngine:
         
         # Возврат пар (индекс, сходство) для топ-K результатов
         results = [(idx, similarities[idx]) for idx in top_indices if similarities[idx] > 0]
+        
+        # Если в запросе есть метки (например, "10 класс химия"), добавляем соответствующие документы
+        label_results = self._search_by_labels(query)
+        combined_results = self._combine_results(results, label_results, len(similarities))
+        
+        # Возвращаем топ-K результатов из объединенного списка
+        combined_top_indices = sorted(combined_results, key=lambda x: x[1], reverse=True)[:top_k]
+        
+        return combined_top_indices
+    
+    def _search_by_labels(self, query: str) -> List[Tuple[int, float]]:
+        """
+        Поиск по меткам (класс, предмет и т.д.)
+        """
+        results = []
+        
+        # Парсим запрос на наличие меток
+        query_lower = query.lower()
+        
+        # Проверяем, содержит ли запрос информацию о классе и предмете
+        class_match = None
+        subject_match = None
+        
+        # Ищем возможные обозначения класса
+        for i in range(1, 12):
+            if str(i) in query_lower and ('класс' in query_lower or 'grade' in query_lower):
+                class_match = str(i)
+                break
+                
+        # Ищем возможные обозначения предмета
+        subjects = ["математика", "русский", "литература", "история", "география", 
+                   "биология", "химия", "физика", "информатика", "английский", 
+                   "немецкий", "французский", "обществознание", "экономика",
+                   "право", "обж", "физкультура", "izo", "музыка", "технология"]
+        
+        for subject in subjects:
+            if subject in query_lower:
+                subject_match = subject
+                break
+        
+        # Если нашли метки, ищем соответствующие документы
+        for idx, entry in enumerate(self.entries_data):
+            edu_info = entry.get("education_info", {})
+            entry_class = str(edu_info.get("class")) if edu_info.get("class") else None
+            entry_subject = edu_info.get("subject", "").lower()
+            
+            # Если есть совпадение по классу и предмету, добавляем документ
+            if ((class_match and entry_class == class_match) and 
+                (subject_match and subject_match in entry_subject)):
+                results.append((idx, 1.0))  # Высокий вес для точного совпадения по меткам
+            elif class_match and entry_class == class_match:
+                results.append((idx, 0.8))  # Средний вес для совпадения только по классу
+            elif subject_match and subject_match in entry_subject:
+                results.append((idx, 0.8))  # Средний вес для совпадения только по предмету
+        
+        return results
+    
+    def _combine_results(self, semantic_results: List[Tuple[int, float]], 
+                        label_results: List[Tuple[int, float]], 
+                        total_docs: int) -> List[Tuple[int, float]]:
+        """
+        Объединение результатов семантического поиска и поиска по меткам
+        """
+        # Создаем массив с начальными весами
+        combined_scores = np.zeros(total_docs)
+        
+        # Добавляем веса из семантического поиска
+        for idx, score in semantic_results:
+            combined_scores[idx] += score
+            
+        # Добавляем веса из поиска по меткам (с более высоким коэффициентом)
+        for idx, score in label_results:
+            combined_scores[idx] += score * 1.5  # Увеличиваем вес для меток
+            
+        # Формируем результаты
+        results = [(i, combined_scores[i]) for i in range(total_docs) if combined_scores[i] > 0]
         
         return results
     
@@ -133,30 +231,52 @@ class SimpleSemanticSearchEngine:
         self.processed_docs = model_data['processed_docs']
         self.vectorizer = model_data['vectorizer']
         self.doc_vectors = model_data['doc_vectors']
+        
+        # При загрузке модели также загружаем данные записей
+        self.entries_data = self._load_entries_data()
 
 def demo_simple_search():
     """
     Демонстрация работы простого семантического поиска.
     """
-    # Пример документов
-    documents = [
-        "Искусственный интеллект - это область компьютерных наук, занимающаяся созданием интеллектуальных машин.",
-        "Машинное обучение - это подраздел искусственного интеллекта, которое позволяет системам автоматически обучаться и улучшаться.",
-        "Глубокое обучение использует нейронные сети для анализа сложных паттернов в данных.",
-        "Python - популярный язык программирования для разработки приложений машинного обучения.",
-        "Обработка естественного языка помогает компьютерам понимать человеческий язык.",
-        "Веб-разработка включает создание сайтов и веб-приложений с использованием HTML, CSS и JavaScript.",
-        "Базы данных используются для хранения и управления структурированными данными.",
-        "Алгоритмы сортировки позволяют эффективно упорядочивать данные в определенном порядке.",
-        "Квантовые вычисления представляют собой парадигму вычислений, основанную на квантовой механике.",
-        "Блокчейн - это распределенная технология хранения данных, обеспечивающая безопасность и прозрачность."
-    ]
+    # Загрузка данных из knowledge_base.json
+    try:
+        with open("knowledge_base.json", "r", encoding="utf-8") as f:
+            knowledge_base = json.load(f)
+    except FileNotFoundError:
+        print("Файл knowledge_base.json не найден. Используем примеры по умолчанию.")
+        knowledge_base = []
+    
+    # Подготовка документов для поиска из знаний
+    if knowledge_base:
+        documents = []
+        entries_data = []
+        for entry in knowledge_base:
+            # Создаем документ из заголовка и содержимого
+            doc_text = f"{entry.get('title', '')} {entry.get('content', '')}"
+            documents.append(doc_text)
+            entries_data.append(entry)  # Сохраняем полные данные записи
+    else:
+        # Пример документов по умолчанию
+        documents = [
+            "Искусственный интеллект - это область компьютерных наук, занимающаяся созданием интеллектуальных машин.",
+            "Машинное обучение - это подраздел искусственного интеллекта, которое позволяет системам автоматически обучаться и улучшаться.",
+            "Глубокое обучение использует нейронные сети для анализа сложных паттернов в данных.",
+            "Python - популярный язык программирования для разработки приложений машинного обучения.",
+            "Обработка естественного языка помогает компьютерам понимать человеческий язык.",
+            "Веб-разработка включает создание сайтов и веб-приложений с использованием HTML, CSS и JavaScript.",
+            "Базы данных используются для хранения и управления структурированными данными.",
+            "Алгоритмы сортировки позволяют эффективно упорядочивать данные в определенном порядке.",
+            "Квантовые вычисления представляют собой парадигму вычислений, основанную на квантовой механике.",
+            "Блокчейн - это распределенная технология хранения данных, обеспечивающая безопасность и прозрачность."
+        ]
+        entries_data = None
     
     print("Инициализация простого семантического поискового движка...")
     
     # Создание экземпляра поискового движка
     search_engine = SimpleSemanticSearchEngine()
-    search_engine.add_documents(documents)
+    search_engine.add_documents(documents, entries_data)
     
     print("Простой семантический поисковый движок успешно инициализирован!")
     print("=" * 70)
@@ -170,6 +290,8 @@ def demo_simple_search():
         "Нейронные сети",                      # Семантически связано с документом о глубоком обучении
         "Как компьютеры понимают речь?",       # Семантически связано с NLP
         "Упорядочивание данных",               # Семантически связано с алгоритмами сортировки
+        "10 класс химия",                      # Пример запроса с метками
+        "задание для 10 класса по химии"       # Еще один пример запроса с метками
     ]
     
     for query in queries:
@@ -180,11 +302,19 @@ def demo_simple_search():
         if results:
             for rank, (idx, score) in enumerate(results, 1):
                 print(f"{rank}. Релевантность: {score:.3f}")
-                print(f"   Документ: {search_engine.documents[idx][:100]}...")
+                if idx < len(search_engine.documents):
+                    print(f"   Документ: {search_engine.documents[idx][:100]}...")
+                if entries_data and idx < len(entries_data):
+                    entry = entries_data[idx]
+                    edu_info = entry.get("education_info", {})
+                    if edu_info:
+                        class_val = edu_info.get("class", "Не указан")
+                        subject = edu_info.get("subject", "Не указан")
+                        print(f"   Метки: Класс: {class_val}, Предмет: {subject}")
                 print()
         else:
             print("Не найдено релевантных документов.")
-    
+
     print("\n" + "=" * 70)
     print("Демонстрация различий между семантическим и точным поиском:")
     print("Семантический поиск находит смысловые связи даже если ключевые слова не совпадают напрямую.")
