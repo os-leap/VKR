@@ -110,5 +110,23 @@
         "target": "задание для детей",
         "details": "Добавлена новая запись в теме 'Без темы'",
         "entry_id": null
+    },
+    {
+        "timestamp": "2026-02-10T21:51:48.961101",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "задание для детей",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "timestamp": "2026-02-10T21:51:59.997996",
+        "username": "admin",
+        "action_type": "add",
+        "target": "asd",
+        "details": "Добавлена новая запись в теме 'Без темы'",
+        "entry_id": null
     }
 ]
