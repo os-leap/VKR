@@ -88,10 +88,7 @@ def audit_log():
     # Сортируем по времени (новые сначала)
     logs.sort(key=lambda x: x["timestamp"], reverse=True)
 
-    # Генерируем отчет
-    report = audit_system.generate_audit_report()
-
-    return render_template("audit.html", logs=logs, report=report, format_date=format_date)
+    return render_template("audit.html", logs=logs, format_date=format_date)
 
 
 @app.route("/backups")
@@ -125,6 +122,13 @@ def restore_backup(filename):
     else:
         return jsonify({"success": False, "error": "Failed to restore backup"})
 
+
+@app.route("/restore-data-page")
+def restore_data_page():
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    
+    return render_template("restore_data.html")
 
 @app.route("/restore-data", methods=["POST"])
 def restore_data():
