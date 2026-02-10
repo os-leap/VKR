@@ -1,1 +1,1 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a template HTML file (`templates/restore_data.html`), which is a source file and should not be added to .gitignore.
+Nothing needs to be added to the .gitignore file based on the provided changes. The only modified file is a template HTML file (`templates/restore_data.html`), which is a source file that should not be ignored. There are no build artifacts, dependencies, temporary files, or other items that require ignoring in this change set.
