@@ -754,20 +754,18 @@ def uploaded_file(filename):
 def search_entry():
     query = request.form.get("query", "").strip()
     selected_topic = request.form.get("topic", "Все темы")
-    search_type = request.form.get("search_type", "syntax")  # Получаем тип поиска из формы
 
     if not query:
         return redirect(url_for("index"))
 
     # Redirect to GET route to have clean URLs that can be shared
-    return redirect(url_for('search_entry_get', query=query, topic=selected_topic, search_type=search_type))
+    return redirect(url_for('search_entry_get', query=query, topic=selected_topic))
 
 
 @app.route("/search", methods=["GET"])
 def search_entry_get():
     query = request.args.get("query", "").strip()
     selected_topic = request.args.get("topic", "Все темы")
-    search_type = request.args.get("search_type", "syntax")  # Добавляем параметр типа поиска
 
     if not query:
         return redirect(url_for("index"))
@@ -781,37 +779,32 @@ def search_entry_get():
     extracted_class, extracted_subject = extract_filters_from_query(query)
     
     # Сначала выполняем синтаксический поиск
-    if search_type == "semantic":
-        # Используем семантический поиск
-        results = perform_integrated_search(query, search_type="semantic", top_k=20)
-    else:
-        # Используем синтаксический поиск
-        for entry in data:
-            # Применяем извлеченные фильтры
-            if extracted_class:
-                entry_class = entry.get("education_info", {}).get("class", "")
-                if entry_class != extracted_class:
-                    continue
-            
-            if extracted_subject:
-                entry_subject = entry.get("education_info", {}).get("subject", "")
-                if entry_subject != extracted_subject:
-                    continue
+    for entry in data:
+        # Применяем извлеченные фильтры
+        if extracted_class:
+            entry_class = entry.get("education_info", {}).get("class", "")
+            if entry_class != extracted_class:
+                continue
+        
+        if extracted_subject:
+            entry_subject = entry.get("education_info", {}).get("subject", "")
+            if entry_subject != extracted_subject:
+                continue
 
-            # Фильтруем по теме, если выбрана конкретная тема
-            if selected_topic != "Все темы" and selected_topic:
-                if entry.get("topic", "Без темы") != selected_topic:
-                    continue
+        # Фильтруем по теме, если выбрана конкретная тема
+        if selected_topic != "Все темы" and selected_topic:
+            if entry.get("topic", "Без темы") != selected_topic:
+                continue
 
-            # Используем синтаксически-осознанный поиск в заголовке и содержании
-            search_in_title = syntax_aware_search(entry["title"], query)
-            search_in_content = syntax_aware_search(entry["content"], query)
+        # Используем синтаксически-осознанный поиск в заголовке и содержании
+        search_in_title = syntax_aware_search(entry["title"], query)
+        search_in_content = syntax_aware_search(entry["content"], query)
 
-            if search_in_title or search_in_content:
-                results.append(entry)
+        if search_in_title or search_in_content:
+            results.append(entry)
     
     # Если синтаксический поиск не дал результатов, выполняем семантический поиск
-    if not results and search_type == "syntax":
+    if not results:
         results = perform_integrated_search(query, search_type="semantic", top_k=20)
 
     # Получаем статистику по темам
@@ -819,7 +812,7 @@ def search_entry_get():
 
     return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
-                           search_query=query, topic_stats=topic_stats, search_type=search_type)
+                           search_query=query, topic_stats=topic_stats)
 
 
 def extract_filters_from_query(query):
