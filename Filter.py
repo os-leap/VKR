@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime
 
 
@@ -77,3 +78,33 @@ class FilterManager:
             return dt.strftime("%Y-%m-%d %H:%M")
         except:
             return "Неизвестно"
+
+    def search_by_keywords(self, keywords):
+        """
+        Поиск записей по ключевым словам
+        keywords: строка с ключевыми словами или список ключевых слов
+        Возвращает список записей, содержащих хотя бы одно из ключевых слов
+        """
+        if isinstance(keywords, str):
+            keywords = [kw.strip() for kw in keywords.split() if kw.strip()]
+        
+        if not keywords:
+            return self.data
+        
+        results = []
+        for entry in self.data:
+            # Проверяем title, content и другие поля на наличие ключевых слов
+            text_to_search = f"{entry.get('title', '')} {entry.get('content', '')}".lower()
+            
+            # Проверяем также информацию об образовании, если она есть
+            education_info = entry.get('education_info', {})
+            if education_info:
+                class_info = education_info.get('class', '')
+                subject_info = education_info.get('subject', '')
+                text_to_search += f" {class_info} {subject_info}".lower()
+            
+            # Проверяем, содержит ли текст хотя бы одно из ключевых слов
+            if any(keyword.lower() in text_to_search for keyword in keywords):
+                results.append(entry)
+        
+        return results
