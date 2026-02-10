@@ -49,10 +49,11 @@
         <button type="submit">Искать</button>
       </form>
       <a href="{{ url_for('add_entry') }}" class="btn-add">Добавить запись</a>
+      <button class="filters-toggle-btn" onclick="toggleFilters()">Скрыть/Показать фильтры</button>
     </div>
 
     <!-- Панель расширенной фильтрации -->
-    <div class="advanced-filter-panel">
+    <div class="advanced-filter-panel" id="advancedFilterPanel">
       <h3>Фильтры</h3>
       <form method="GET" action="{{ url_for('index') }}">
         <div class="filter-grid">
@@ -229,6 +230,11 @@
         }
       });
     });
+
+    function toggleFilters() {
+      const filterPanel = document.getElementById('advancedFilterPanel');
+      filterPanel.classList.toggle('hidden');
+    }
   </script>
 </body>
 </html>
