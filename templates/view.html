@@ -5,8 +5,6 @@
     <p><strong>Изменено:</strong> {{ format_date(entry.updated_at) }}</p>
     <hr>
     <pre>{{ entry.content }}</pre>
-    <a href="{{ url_for('index') }}">Назад</a>
-<pre>{{ entry.content }}</pre>
 
 <!-- Проверка наличия файла -->
 {% if entry.file %}
@@ -23,4 +21,5 @@
 
 <br>
 <a href="{{ url_for('index') }}">Назад</a>
+
 {% endblock %}
