@@ -150,35 +150,67 @@ class SimpleSemanticSearchEngine:
         
         # Ищем возможные обозначения класса
         for i in range(1, 12):
-            if str(i) in query_lower and ('класс' in query_lower or 'grade' in query_lower):
+            if (str(i) in query_lower or str(i).zfill(2) in query_lower) and \
+               ('класс' in query_lower or 'grade' in query_lower or 'параллель' in query_lower):
                 class_match = str(i)
                 break
-                
-        # Ищем возможные обозначения предмета
-        subjects = ["математика", "русский", "литература", "история", "география", 
-                   "биология", "химия", "физика", "информатика", "английский", 
-                   "немецкий", "французский", "обществознание", "экономика",
-                   "право", "обж", "физкультура", "izo", "музыка", "технология"]
         
-        for subject in subjects:
-            if subject in query_lower:
-                subject_match = subject
+        # Ищем возможные обозначения предмета
+        subjects = {
+            "математика": ["математика", "алгебра", "геометрия"],
+            "русский": ["русский", "язык", "русский язык"],
+            "литература": ["литература", "литературное чтение"],
+            "история": ["история"],
+            "география": ["география"],
+            "биология": ["биология", "окружающий мир", "окружающий"],
+            "химия": ["химия"],
+            "физика": ["физика"],
+            "информатика": ["информатика", "компьютер", "цифровой"],
+            "английский": ["английский", "английский язык"],
+            "немецкий": ["немецкий", "немецкий язык"],
+            "французский": ["французский", "французский язык"],
+            "обществознание": ["обществознание", "общество"],
+            "экономика": ["экономика"],
+            "право": ["право"],
+            "обж": ["обж", "безопасность", "основы безопасности"],
+            "физкультура": ["физкультура", "физическая культура", "спорт"],
+            "izo": ["изо", "изобразительное", "рисование"],
+            "музыка": ["музыка"],
+            "технология": ["технология", "труд"]
+        }
+        
+        for main_subject, subject_variants in subjects.items():
+            for variant in subject_variants:
+                if variant in query_lower:
+                    subject_match = main_subject
+                    break
+            if subject_match:
                 break
         
         # Если нашли метки, ищем соответствующие документы
         for idx, entry in enumerate(self.entries_data):
             edu_info = entry.get("education_info", {})
             entry_class = str(edu_info.get("class")) if edu_info.get("class") else None
+            entry_parallel = edu_info.get("parallel", "все")  # Предполагаем, что "все" - значение по умолчанию
             entry_subject = edu_info.get("subject", "").lower()
             
-            # Если есть совпадение по классу и предмету, добавляем документ
-            if ((class_match and entry_class == class_match) and 
-                (subject_match and subject_match in entry_subject)):
-                results.append((idx, 1.0))  # Высокий вес для точного совпадения по меткам
-            elif class_match and entry_class == class_match:
-                results.append((idx, 0.8))  # Средний вес для совпадения только по классу
-            elif subject_match and subject_match in entry_subject:
-                results.append((idx, 0.8))  # Средний вес для совпадения только по предмету
+            # Проверяем совпадение по классу и предмету
+            class_matches = (class_match and entry_class == class_match)
+            subject_matches = (subject_match and subject_match in entry_subject.lower())
+            
+            # Для параллели считаем, что если в запросе нет указания на конкретную параллель,
+            # то ищем в "все" или в отсутствии ограничения
+            parallel_matches = True  # По умолчанию совпадает, так как ищем "все" параллели
+            
+            if class_matches and subject_matches:
+                # Высокий вес для точного совпадения по классу и предмету
+                results.append((idx, 1.0))
+            elif class_matches:
+                # Средний вес для совпадения только по классу
+                results.append((idx, 0.8))
+            elif subject_matches:
+                # Средний вес для совпадения только по предмету
+                results.append((idx, 0.8))
         
         return results
     

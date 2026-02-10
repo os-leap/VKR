@@ -91,6 +91,18 @@ class FilterManager:
         if not keywords:
             return self.data
         
+        # Попробуем определить, является ли запрос запросом по образовательным меткам
+        class_level, parallel, subject = self._parse_education_tags(keywords)
+        
+        # Если удалось распознать образовательные метки, используем расширенный поиск
+        if class_level or subject:
+            return self.advanced_search_by_education_tags(
+                class_level=class_level, 
+                parallel=parallel, 
+                subject=subject
+            )
+        
+        # Иначе используем обычный поиск по ключевым словам
         results = []
         for entry in self.data:
             # Проверяем title, content и другие поля на наличие ключевых слов
@@ -100,11 +112,101 @@ class FilterManager:
             education_info = entry.get('education_info', {})
             if education_info:
                 class_info = education_info.get('class', '')
+                parallel_info = education_info.get('parallel', 'все')  # Если параллель не указана, считаем что "все"
                 subject_info = education_info.get('subject', '')
-                text_to_search += f" {class_info} {subject_info}".lower()
+                text_to_search += f" {class_info} {parallel_info} {subject_info}".lower()
             
             # Проверяем, содержит ли текст хотя бы одно из ключевых слов
             if any(keyword.lower() in text_to_search for keyword in keywords):
                 results.append(entry)
+        
+        return results
+
+    def _parse_education_tags(self, keywords):
+        """
+        Анализирует ключевые слова и извлекает образовательные метки
+        Возвращает кортеж (class_level, parallel, subject)
+        """
+        class_level = None
+        parallel = "все"  # по умолчанию ищем по всем параллелям
+        subject = None
+        
+        # Приводим все ключевые слова к нижнему регистру для сопоставления
+        lower_keywords = [kw.lower() for kw in keywords]
+        
+        # Шаблоны для поиска класса
+        class_patterns = {
+            "1": ["1", "первый", "первом"],
+            "2": ["2", "второй", "втором"],
+            "3": ["3", "третий", "третьем"],
+            "4": ["4", "четвертый", "четвертом"],
+            "5": ["5", "пятый", "пятом"],
+            "6": ["6", "шестой", "шестом"],
+            "7": ["7", "седьмой", "седьмом"],
+            "8": ["8", "восьмой", "восьмом"],
+            "9": ["9", "девятый", "девятом"],
+            "10": ["10", "десятый", "десятом"],
+            "11": ["11", "одиннадцатый", "одиннадцатом"]
+        }
+        
+        # Шаблоны для поиска предметов
+        subject_patterns = {
+            "русский язык": ["русский", "язык", "русского", "русскому"],
+            "математика": ["математика", "математике", "математики"],
+            "английский язык": ["английский", "английского", "английскому"],
+            "французский язык": ["французский", "французского", "французскому", "французский язык"],
+            "литература": ["литература", "литературе", "литературы"],
+            "физика": ["физика", "физике", "физики"],
+            "химия": ["химия", "химии", "химе"],
+            "биология": ["биология", "биологии", "биологии"],
+            "география": ["география", "географии", "географии"],
+            "история": ["история", "истории", "истории"],
+            "обществознание": ["обществознание", "обществознанию", "обществознания"],
+            "информатика": ["информатика", "информатике", "информатики"],
+            "алгебра": ["алгебра", "алгебре", "алгебры"],
+            "геометрия": ["геометрия", "геометрии", "геометрии"]
+        }
+        
+        # Поиск уровня класса
+        for level, patterns in class_patterns.items():
+            if any(pattern in lower_keywords for pattern in patterns):
+                class_level = level
+                break
+        
+        # Поиск предмета
+        for subj, patterns in subject_patterns.items():
+            if any(pattern in lower_keywords for pattern in patterns):
+                subject = subj
+                break
+        
+        return class_level, parallel, subject
+
+    def advanced_search_by_education_tags(self, class_level=None, parallel="все", subject=None):
+        """
+        Расширенный поиск по образовательным меткам
+        class_level: уровень класса (например, "1")
+        parallel: параллель класса (по умолчанию "все")
+        subject: предмет (например, "Французский язык")
+        Возвращает список записей, соответствующих критериям
+        """
+        results = []
+        
+        for entry in self.data:
+            education_info = entry.get('education_info', {})
+            
+            # Проверяем совпадение по классу
+            if class_level and str(education_info.get('class', '')) != str(class_level):
+                continue
+            
+            # Проверяем совпадение по предмету
+            if subject and education_info.get('subject', '').lower() != subject.lower():
+                continue
+            
+            # Для параллели "все" подходит любая параллель, иначе проверяем точное совпадение
+            entry_parallel = education_info.get('parallel', 'все')
+            if parallel != "все" and entry_parallel != parallel:
+                continue
+            
+            results.append(entry)
         
         return results
