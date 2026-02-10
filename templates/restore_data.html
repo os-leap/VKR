@@ -114,9 +114,18 @@
                             `;
                         }
                         
-                        // Добавляем обработчик события на изменение выбора
-                        selectElement.addEventListener('change', async function() {
-                            const action = this.value;
+                        // Добавляем кнопку Применить
+                        const applyButton = document.createElement('button');
+                        applyButton.type = 'button';
+                        applyButton.className = 'btn btn-primary btn-sm apply-btn';
+                        applyButton.dataset.recordId = record.id;
+                        applyButton.dataset.backupId = record.backup_id || '';
+                        applyButton.textContent = 'Применить';
+                        
+                        // Добавляем обработчик события на кнопку Применить
+                        applyButton.addEventListener('click', async function() {
+                            const selectElement = this.parentElement.querySelector('.action-select');
+                            const action = selectElement.value;
                             const recordId = this.dataset.recordId;
                             const backupId = this.dataset.backupId;
                             
@@ -125,6 +134,8 @@
                                 // После выполнения действия обновим список
                                 loadRecords(document.getElementById('restore_date_from').value, 
                                           document.getElementById('restore_date_to').value);
+                            } else {
+                                alert('Пожалуйста, выберите действие');
                             }
                         });
                         
@@ -136,7 +147,8 @@
                             <td>${record.old_value ? truncateText(record.old_value, 50) : ''}</td>
                             <td>${record.new_value ? truncateText(record.new_value, 50) : ''}</td>
                             <td>
-                                ${selectElement.outerHTML}
+                                ${selectElement.outerHTML}<br>
+                                ${applyButton.outerHTML}
                             </td>
                         `;
                         
