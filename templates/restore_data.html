@@ -6,8 +6,8 @@
             <h2 class="restore-title">Восстановление данных</h2>
             
             <div class="restore-controls">
-                <h3 class="section-title">Выборочное восстановление данных</h3>
-                <form id="restore-form" class="restore-form">
+                <h3 class="section-title">Фильтр по периоду</h3>
+                <form id="period-filter-form" class="restore-form">
                     <div class="restore-group">
                         <label for="restore_date_from" class="form-label">Период с:</label>
                         <input type="date" id="restore_date_from" name="date_from" required class="form-input">
@@ -16,21 +16,31 @@
                         <label for="restore_date_to" class="form-label">по:</label>
                         <input type="date" id="restore_date_to" name="date_to" required class="form-input">
                     </div>
-                    <div class="restore-group">
-                        <label for="restore_action_types" class="form-label">Типы действий:</label>
-                        <select id="restore_action_types" name="action_types" multiple size="4" class="form-select">
-                            <option value="delete">Восстановить удаленные записи</option>
-                            <option value="edit">Отменить редактирование</option>
-                        </select>
-                    </div>
-                    <div class="restore-group">
-                        <label for="restore_targets" class="form-label">Названия записей для восстановления (через запятую):</label>
-                        <input type="text" id="restore_targets" name="targets" placeholder="Например: Заголовок1, Заголовок2" class="form-input">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-restore">Восстановить выбранные данные</button>
+                    <button type="submit" class="btn btn-primary btn-restore">Показать записи</button>
                 </form>
-                <div id="restore-result" class="restore-result"></div>
             </div>
+
+            <div id="records-list" class="records-list" style="display:none;">
+                <h3 class="section-title">Записи с изменениями</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Дата изменения</th>
+                            <th>Тип действия</th>
+                            <th>Заголовок записи</th>
+                            <th>Описание</th>
+                            <th>Старое значение</th>
+                            <th>Новое значение</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-table-body">
+                        <!-- Сюда будут загружаться записи -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="restore-result" class="restore-result"></div>
 
             <div class="restore-actions">
                 <a href="{{ url_for('audit_log') }}" class="btn btn-secondary btn-back">Назад к сбору событий</a>
@@ -39,30 +49,150 @@
     </div>
 
     <script>
-        // Function to handle selective data restoration
-        document.getElementById('restore-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const dateFrom = formData.get('date_from');
-            const dateTo = formData.get('date_to');
-            const actionTypes = Array.from(this.querySelectorAll('#restore_action_types option:checked')).map(option => option.value);
-            const targets = formData.get('targets').split(',').map(t => t.trim()).filter(t => t !== '');
-            
+        // Функция для загрузки записей за указанный период
+        async function loadRecords(dateFrom, dateTo) {
+            const recordsList = document.getElementById('records-list');
+            const tbody = document.getElementById('records-table-body');
             const resultDiv = document.getElementById('restore-result');
-            resultDiv.innerHTML = '<div class="loading">Выполняется восстановление...</div>';
+            
+            resultDiv.innerHTML = '<div class="loading">Загрузка записей...</div>';
+            recordsList.style.display = 'none';
             
             try {
-                const response = await fetch('/restore-data', {
+                const response = await fetch('/get-changed-records', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         date_from: dateFrom,
-                        date_to: dateTo,
-                        action_types: actionTypes,
-                        targets: targets
+                        date_to: dateTo
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if(result.success) {
+                    tbody.innerHTML = '';
+                    
+                    if(result.records.length === 0) {
+                        resultDiv.innerHTML = '<div class="alert alert-info">Нет записей с изменениями за указанный период</div>';
+                        return;
+                    }
+                    
+                    result.records.forEach(record => {
+                        const row = document.createElement('tr');
+                        
+                        // Создаем выпадающий список для каждого действия
+                        const selectElement = document.createElement('select');
+                        selectElement.className = 'form-select action-select';
+                        selectElement.dataset.recordId = record.id;
+                        selectElement.dataset.backupId = record.backup_id || '';
+                        
+                        // Добавляем опции в зависимости от типа действия
+                        if(record.action_type === 'delete') {
+                            selectElement.innerHTML = `
+                                <option value="">Выберите действие</option>
+                                <option value="restore">Восстановить данные</option>
+                            `;
+                        } else if(record.action_type === 'edit') {
+                            selectElement.innerHTML = `
+                                <option value="">Выберите действие</option>
+                                <option value="revert">Отменить изменение</option>
+                                <option value="restore">Восстановить из резервной копии</option>
+                            `;
+                        } else if(record.action_type === 'create') {
+                            selectElement.innerHTML = `
+                                <option value="">Выберите действие</option>
+                                <option value="delete">Удалить запись</option>
+                            `;
+                        } else {
+                            selectElement.innerHTML = `
+                                <option value="">Выберите действие</option>
+                                <option value="restore">Восстановить данные</option>
+                                <option value="revert">Отменить действие</option>
+                            `;
+                        }
+                        
+                        // Добавляем обработчик события на изменение выбора
+                        selectElement.addEventListener('change', async function() {
+                            const action = this.value;
+                            const recordId = this.dataset.recordId;
+                            const backupId = this.dataset.backupId;
+                            
+                            if(action) {
+                                await performAction(action, recordId, backupId, record.title);
+                                // После выполнения действия обновим список
+                                loadRecords(document.getElementById('restore_date_from').value, 
+                                          document.getElementById('restore_date_to').value);
+                            }
+                        });
+                        
+                        row.innerHTML = `
+                            <td>${record.timestamp}</td>
+                            <td>${getActionTypeLabel(record.action_type)}</td>
+                            <td>${record.title || 'Не указано'}</td>
+                            <td>${record.description || 'Не указано'}</td>
+                            <td>${record.old_value ? truncateText(record.old_value, 50) : ''}</td>
+                            <td>${record.new_value ? truncateText(record.new_value, 50) : ''}</td>
+                            <td>
+                                ${selectElement.outerHTML}
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+                    
+                    recordsList.style.display = 'block';
+                    resultDiv.innerHTML = '';
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            Ошибка загрузки записей: ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        Ошибка соединения: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Вспомогательная функция для получения метки типа действия
+        function getActionTypeLabel(actionType) {
+            switch(actionType) {
+                case 'create': return 'Создание';
+                case 'edit': return 'Редактирование';
+                case 'delete': return 'Удаление';
+                case 'view': return 'Просмотр';
+                default: return actionType;
+            }
+        }
+        
+        // Вспомогательная функция для обрезки текста
+        function truncateText(text, maxLength) {
+            if(!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+        
+        // Функция для выполнения выбранного действия
+        async function performAction(action, recordId, backupId, title) {
+            const resultDiv = document.getElementById('restore-result');
+            resultDiv.innerHTML = `<div class="loading">Выполняется действие "${getActionLabel(action)}" для записи "${title}"...</div>`;
+            
+            try {
+                const response = await fetch('/perform-action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        record_id: recordId,
+                        backup_id: backupId
                     })
                 });
                 
@@ -74,12 +204,10 @@
                             ${result.message}
                         </div>
                     `;
-                    // Refresh the page to show updated logs
-                    setTimeout(() => location.reload(), 2000);
                 } else {
                     resultDiv.innerHTML = `
                         <div class="alert alert-danger">
-                            Ошибка восстановления: ${result.error}
+                            Ошибка выполнения действия: ${result.error}
                         </div>
                     `;
                 }
@@ -90,6 +218,39 @@
                     </div>
                 `;
             }
+        }
+        
+        // Вспомогательная функция для получения метки действия
+        function getActionLabel(action) {
+            switch(action) {
+                case 'restore': return 'Восстановить данные';
+                case 'revert': return 'Отменить изменение';
+                case 'delete': return 'Удалить запись';
+                default: return action;
+            }
+        }
+        
+        // Обработка формы фильтрации по дате
+        document.getElementById('period-filter-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dateFrom = document.getElementById('restore_date_from').value;
+            const dateTo = document.getElementById('restore_date_to').value;
+            
+            if(dateFrom && dateTo) {
+                await loadRecords(dateFrom, dateTo);
+            }
+        });
+        
+        // Устанавливаем сегодняшнюю дату как значение по умолчанию
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const today = new Date().toISOString().split('T')[0];
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekAgoStr = weekAgo.toISOString().split('T')[0];
+            
+            document.getElementById('restore_date_from').value = weekAgoStr;
+            document.getElementById('restore_date_to').value = today;
         });
     </script>
 {% endblock %}
