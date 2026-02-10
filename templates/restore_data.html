@@ -68,8 +68,21 @@
                             ${result.message}
                         </div>
                     `;
-                    // Refresh the page to show updated logs
-                    setTimeout(() => location.reload(), 2000);
+                    // Refresh the page to show updated logs and restored records in the main list
+                    setTimeout(() => {
+                        // Reload the current page to reflect changes
+                        location.reload();
+                        
+                        // Also attempt to refresh the main data list if it exists on the page
+                        if(window.parent && window.parent !== window) {
+                            // If this page is in an iframe, also refresh the parent
+                            try {
+                                window.parent.location.reload();
+                            } catch(e) {
+                                console.log("Could not refresh parent window");
+                            }
+                        }
+                    }, 2000);
                 } else {
                     resultDiv.innerHTML = `
                         <div class="alert alert-danger">
