@@ -1,36 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Восстановление данных</h2>
-    
-    <div class="restore-controls">
-        <h3>Выборочное восстановление данных</h3>
-        <form id="restore-form" class="restore-form">
-            <div class="restore-group">
-                <label for="restore_date_from">Период с:</label>
-                <input type="date" id="restore_date_from" name="date_from" required>
+    <div class="container">
+        <div class="restore-container">
+            <h2 class="restore-title">Восстановление данных</h2>
+            
+            <div class="restore-controls">
+                <h3 class="section-title">Выборочное восстановление данных</h3>
+                <form id="restore-form" class="restore-form">
+                    <div class="restore-group">
+                        <label for="restore_date_from" class="form-label">Период с:</label>
+                        <input type="date" id="restore_date_from" name="date_from" required class="form-input">
+                    </div>
+                    <div class="restore-group">
+                        <label for="restore_date_to" class="form-label">по:</label>
+                        <input type="date" id="restore_date_to" name="date_to" required class="form-input">
+                    </div>
+                    <div class="restore-group">
+                        <label for="restore_action_types" class="form-label">Типы действий:</label>
+                        <select id="restore_action_types" name="action_types" multiple size="4" class="form-select">
+                            <option value="delete">Восстановить удаленные записи</option>
+                            <option value="edit">Отменить редактирование</option>
+                        </select>
+                    </div>
+                    <div class="restore-group">
+                        <label for="restore_targets" class="form-label">Названия записей для восстановления (через запятую):</label>
+                        <input type="text" id="restore_targets" name="targets" placeholder="Например: Заголовок1, Заголовок2" class="form-input">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-restore">Восстановить выбранные данные</button>
+                </form>
+                <div id="restore-result" class="restore-result"></div>
             </div>
-            <div class="restore-group">
-                <label for="restore_date_to">по:</label>
-                <input type="date" id="restore_date_to" name="date_to" required>
-            </div>
-            <div class="restore-group">
-                <label for="restore_action_types">Типы действий:</label>
-                <select id="restore_action_types" name="action_types" multiple size="4">
-                    <option value="delete">Восстановить удаленные записи</option>
-                    <option value="edit">Отменить редактирование</option>
-                </select>
-            </div>
-            <div class="restore-group">
-                <label for="restore_targets">Названия записей для восстановления (через запятую):</label>
-                <input type="text" id="restore_targets" name="targets" placeholder="Например: Заголовок1, Заголовок2">
-            </div>
-            <button type="submit" class="btn btn-warning">Восстановить выбранные данные</button>
-        </form>
-        <div id="restore-result"></div>
-    </div>
 
-    <a href="{{ url_for('audit_log') }}" class="btn-back">Назад к сбору событий</a>
+            <div class="restore-actions">
+                <a href="{{ url_for('audit_log') }}" class="btn btn-secondary btn-back">Назад к сбору событий</a>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Function to handle selective data restoration
