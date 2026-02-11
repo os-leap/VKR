@@ -31,6 +31,15 @@ class FilterManager:
             topic = entry.get("topic", "Без темы")
             topics.add(topic)
         return sorted(list(topics))
+    
+    def get_managed_topics(self):
+        """Возвращает список управляемых тем (без служебных)"""
+        topics = set()
+        for entry in self.data:
+            topic = entry.get("topic", "Без темы")
+            if topic not in ["Все темы", "Без темы"]:
+                topics.add(topic)
+        return sorted(list(topics))
 
     def add_topic_field(self):
         """Добавляет поле topic в существующие записи"""

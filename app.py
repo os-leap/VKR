@@ -683,16 +683,14 @@ def manage_filters():
         return redirect(url_for("manage_filters"))
 
     available_filters = advanced_filter_manager.get_available_filters()
-    topics = filter_manager.get_unique_topics()
-    # Убираем служебные темы из списка для управления
-    manageable_topics = [topic for topic in topics if topic not in ["Все темы", "Без темы"]]
+    topics = filter_manager.get_managed_topics()
     
     return render_template(
         "manage_filters.html",
         classes=available_filters["classes"],
         parallels=available_filters["parallels"],
         subjects=available_filters["subjects"],
-        topics=manageable_topics
+        topics=topics
     )
     
 @app.context_processor
@@ -1024,7 +1022,7 @@ def search_entry_get():
                 continue
 
         # Фильтруем по теме, если выбрана конкретная тема
-        if selected_topic != "Все темы" and selected_topic:
+        if selected_topic and selected_topic != "Все темы":
             if entry.get("topic", "Без темы") != selected_topic:
                 continue
 

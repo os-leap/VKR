@@ -148,8 +148,9 @@ class AdvancedFilterManager:
                 if entry.get("education_info", {}).get("subject") == selected_subject
             ]
         
-        # Фильтрация по теме (если была часть предыдущей системы)
-        if selected_topic and selected_topic != "Все темы" and selected_topic != "":
+        # Фильтрация по теме (если тема выбрана и это не "Все темы")
+        # Если selected_topic не указана или равна "Все темы", то не фильтруем по теме
+        if selected_topic and selected_topic != "Все темы":
             filtered_data = [
                 entry for entry in filtered_data
                 if entry.get("topic", "Без темы") == selected_topic
