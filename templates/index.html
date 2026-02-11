@@ -139,7 +139,7 @@
       {% endif %}
     </div>
 
-    <!-- Список записей -->
+    <!-- Список записей из базы данных -->
     {% if entries %}
       <ul class="entries-list">
         {% for entry in entries %}
@@ -188,6 +188,32 @@
     {% else %}
       <p class="no-entries">Нет записей для отображения</p>
     {% endif %}
+
+    <!-- Отображение записей из pdf_documents.json -->
+    <div class="pdf-documents-section">
+      <h2>Документы из pdf_documents.json</h2>
+      {% if pdf_documents %}
+        <ul class="pdf-entries-list">
+          {% for doc in pdf_documents %}
+            <li class="pdf-entry-item">
+              <div class="entry-header">
+                <h2>{{ doc.title }}</h2>
+                <div class="entry-meta">
+                  <span>Файл: {{ doc.filename }}</span>
+                  <span>Дата скачивания: {{ doc.download_date }}</span>
+                  <span>URL: <a href="{{ doc.url }}" target="_blank">Ссылка</a></span>
+                </div>
+              </div>
+              <div class="entry-content">
+                <p>{{ doc.extracted_title[:200] }}{% if doc.extracted_title|length > 200 %}...{% endif %}</p>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="no-entries">Нет документов из pdf_documents.json для отображения</p>
+      {% endif %}
+    </div>
   </div>
   
   <script>
