@@ -3,6 +3,14 @@
 {% block content %}
     <h2>Аудит действий</h2>
 
+    <!-- Кнопки управления в шапке -->
+    <div class="header-buttons">
+        <a href="{{ url_for('list_backups') }}" class="nav-button rounded-button">Управление резервными копиями</a>
+        <button onclick="createBackup()" class="nav-button rounded-button secondary">Создать резервную копию</button>
+        <a href="{{ url_for('restore_data_page') }}" class="nav-button rounded-button restore">Восстановление данных</a>
+        <a href="{{ url_for('index') }}" class="nav-button rounded-button back">Назад к базе знаний</a>
+    </div>
+
     <!-- Форма фильтрации -->
     <div class="audit-filters">
         <form method="GET" action="{{ url_for('audit_log') }}" class="filter-form">
@@ -40,12 +48,6 @@
             <button type="submit" class="btn-filter">Применить</button>
             <a href="{{ url_for('audit_log') }}" class="btn-reset">Сбросить</a>
         </form>
-    </div>
-
-    <div class="backup-controls">
-        <a href="{{ url_for('list_backups') }}" class="btn btn-primary btn-manage">Управление резервными копиями</a>
-        <button onclick="createBackup()" class="btn btn-secondary btn-create">Создать резервную копию</button>
-        <a href="{{ url_for('restore_data_page') }}" class="btn btn-restore btn-restore-page">Восстановление данных</a>
     </div>
 
     <!-- Таблица логов -->

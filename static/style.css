@@ -141,6 +141,63 @@ li {
     background-color: #0069d9;
 }
 
+/* Стили для кнопок в шапке */
+.header-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 150px;
+}
+
+.rounded-button {
+    border-radius: 25px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.rounded-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.rounded-button.secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.rounded-button.secondary:hover {
+    background-color: #5a6268;
+}
+
+.rounded-button.restore {
+    background-color: #28a745;
+    color: white;
+}
+
+.rounded-button.restore:hover {
+    background-color: #218838;
+}
+
+.rounded-button.back {
+    background-color: #007bff;
+    color: white;
+}
+
+.rounded-button.back:hover {
+    background-color: #0069d9;
+}
+
 .audit-table {
     width: 100%;
     border-collapse: collapse;
