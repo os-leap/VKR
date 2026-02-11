@@ -19,7 +19,7 @@ class PDFScraper:
         os.makedirs(self.download_dir, exist_ok=True)
         
         # Инициализируем JSON файл для хранения информации о PDF файлах
-        self.json_file = 'pdf_documents.json'
+        self.json_file = 'knowledge_base.json'
         self.load_documents()
     
     def load_documents(self):
