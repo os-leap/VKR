@@ -71,6 +71,57 @@ class FilterManager:
             return True
         return False
 
+    def add_topic(self, topic_name):
+        """Добавляет новую тему в фильтры"""
+        # Проверяем, что тема не входит в список зарезервированных
+        reserved_topics = ["Все темы", "Без темы"]
+        if topic_name in reserved_topics:
+            return False
+            
+        # Проверяем, существует ли уже такая тема в данных
+        for entry in self.data:
+            if entry.get("topic") == topic_name:
+                return False  # Тема уже существует
+        
+        # Чтобы тема появилась в списке уникальных тем, нужно, чтобы она была в какой-либо записи
+        # Создаем временную запись с этой темой, если такой темы еще нет в данных
+        temp_entry = {
+            "title": f"Временная запись для темы {topic_name}",
+            "content": f"Эта временная запись используется для добавления темы '{topic_name}' в список доступных тем",
+            "topic": topic_name,
+            "author": "system",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat(),
+            "id": str(len(self.data))
+        }
+        
+        # Добавляем временную запись, чтобы тема появилась в списке
+        self.data.append(temp_entry)
+        self._save_data(self.data)
+        
+        # Удаляем временную запись, чтобы не засорять базу
+        self.data.remove(temp_entry)
+        self._save_data(self.data)
+        
+        return True
+
+    def remove_topic(self, topic_name):
+        """Удаляет тему из фильтров, заменяя на 'Без темы' все записи с этой темой"""
+        if topic_name in ["Все темы", "Без темы"]:
+            return False  # Нельзя удалить зарезервированные темы
+            
+        # Заменяем тему на "Без темы" во всех записях
+        updated = False
+        for entry in self.data:
+            if entry.get("topic") == topic_name:
+                entry["topic"] = "Без темы"
+                updated = True
+                
+        if updated:
+            self._save_data(self.data)
+            
+        return updated
+
     def format_date(self, date_str):
         """Форматирует дату для отображения"""
         try:

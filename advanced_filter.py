@@ -189,11 +189,9 @@ class AdvancedFilterManager:
 
     def get_unique_topics(self):
         """Возвращает уникальные темы (для совместимости со старой системой)"""
-        topics = set(["Все темы", "Без темы"])
-        for entry in self.data:
-            topic = entry.get("topic", "Без темы")
-            topics.add(topic)
-        return sorted(list(topics))
+        from Filter import FilterManager
+        filter_manager = FilterManager(self.data_file)
+        return filter_manager.get_unique_topics()
 
     def format_date(self, date_str):
         """Форматирует дату для отображения"""

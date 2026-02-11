@@ -81,6 +81,28 @@
         </li>
         {% endfor %}
       </ul>
+      
+      <h2>Темы</h2>
+      <form method="POST" action="{{ url_for('manage_filters') }}">
+        <input type="hidden" name="action" value="add">
+        <input type="hidden" name="filter_type" value="topic">
+        <input type="text" name="filter_value" placeholder="Новая тема" required>
+        <button type="submit">Добавить тему</button>
+      </form>
+      
+      <ul class="filter-list">
+        {% for topic in topics %}
+        <li>
+          {{ topic }}
+          <form method="POST" action="{{ url_for('manage_filters') }}" style="display: inline;">
+            <input type="hidden" name="action" value="remove">
+            <input type="hidden" name="filter_type" value="topic">
+            <input type="hidden" name="filter_value" value="{{ topic }}">
+            <button type="submit" class="btn-remove">Удалить</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </body>

@@ -667,6 +667,8 @@ def manage_filters():
                 advanced_filter_manager.add_parallel(filter_value)
             elif filter_type == "subject":
                 advanced_filter_manager.add_subject(filter_value)
+            elif filter_type == "topic":
+                filter_manager.add_topic(filter_value)
 
         elif action == "remove" and filter_type and filter_value:
             if filter_type == "class":
@@ -675,15 +677,22 @@ def manage_filters():
                 advanced_filter_manager.remove_parallel(filter_value)
             elif filter_type == "subject":
                 advanced_filter_manager.remove_subject(filter_value)
+            elif filter_type == "topic":
+                filter_manager.remove_topic(filter_value)
 
         return redirect(url_for("manage_filters"))
 
     available_filters = advanced_filter_manager.get_available_filters()
+    topics = filter_manager.get_unique_topics()
+    # Убираем служебные темы из списка для управления
+    manageable_topics = [topic for topic in topics if topic not in ["Все темы", "Без темы"]]
+    
     return render_template(
         "manage_filters.html",
         classes=available_filters["classes"],
         parallels=available_filters["parallels"],
-        subjects=available_filters["subjects"]
+        subjects=available_filters["subjects"],
+        topics=manageable_topics
     )
     
 @app.context_processor
