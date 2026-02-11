@@ -128,5 +128,25 @@
         "target": "asd",
         "details": "Добавлена новая запись в теме 'Без темы'",
         "entry_id": null
+    },
+    {
+        "id": "1770794812.886484",
+        "timestamp": "2026-02-11T12:26:52.886484",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1770794812.887481",
+        "timestamp": "2026-02-11T12:26:52.887481",
+        "username": "system",
+        "action_type": "sync",
+        "target": "edsoo.ru",
+        "details": "Добавлено: 0, Обновлено: 1",
+        "entry_id": null,
+        "backup_id": null
     }
 ]
