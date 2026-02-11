@@ -70,6 +70,28 @@ class FilterManager:
             self._save_data(self.data)
             return True
         return False
+    
+    def add_topic(self, topic_name):
+        """Добавляет новую тему в существующие записи (если тема не существует)"""
+        updated = False
+        for entry in self.data:
+            if "topic" not in entry:
+                entry["topic"] = topic_name
+                updated = True
+        if updated:
+            self._save_data(self.data)
+        return updated
+    
+    def remove_topic(self, topic_name):
+        """Удаляет указанную тему, заменяя её на 'Без темы'"""
+        updated = False
+        for entry in self.data:
+            if entry.get("topic") == topic_name:
+                entry["topic"] = "Без темы"
+                updated = True
+        if updated:
+            self._save_data(self.data)
+        return updated
 
     def format_date(self, date_str):
         """Форматирует дату для отображения"""
