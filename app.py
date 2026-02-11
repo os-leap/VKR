@@ -669,6 +669,8 @@ def manage_filters():
                 advanced_filter_manager.add_subject(filter_value)
             elif filter_type == "topic":
                 filter_manager.add_topic(filter_value)
+                # Обновляем данные в менеджере после добавления темы
+                filter_manager.data = load_data()
 
         elif action == "remove" and filter_type and filter_value:
             if filter_type == "class":
@@ -679,6 +681,8 @@ def manage_filters():
                 advanced_filter_manager.remove_subject(filter_value)
             elif filter_type == "topic":
                 filter_manager.remove_topic(filter_value)
+                # Обновляем данные в менеджере после удаления темы
+                filter_manager.data = load_data()
 
         return redirect(url_for("manage_filters"))
 
