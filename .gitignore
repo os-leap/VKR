@@ -1,13 +1,1 @@
-```
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# PDF downloads (assuming these are downloaded/temporary files)
-pdf_downloads/
-
-# Logs
-*.log
-```
+(pdf_documents.json and scrape_pdfs.py are source files, no build artifacts, dependencies, or temp files in the changes)

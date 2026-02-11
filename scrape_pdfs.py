@@ -38,6 +38,14 @@ class PDFScraper:
         """Проверка существования документа в JSON файле"""
         for doc in self.documents:
             if doc.get('filename') == filename:
+                # Проверяем, является ли документ связанным с ФГОС
+                if 'фгос' in doc.get('title', '').lower() or 'фгт' in doc.get('title', '').lower():
+                    # Обновляем название документа с текущей датой
+                    current_date = datetime.now().strftime('%d.%m.%Y')
+                    doc['title'] = f"Обновление ФГОС_{current_date}"
+                    # Обновляем запись в JSON файле
+                    self.save_document_record(doc['title'], doc['filename'], doc['url'], doc.get('extracted_title'))
+                    print(f"Обновлено название для ФГОС документа {filename}")
                 return doc
         return None
     
@@ -78,6 +86,12 @@ class PDFScraper:
                     title = title.get_text(strip=True)
                 elif not title:
                     title = os.path.basename(href)
+                
+                # Проверяем, содержит ли название документа что-то связанное с ФГОС
+                if 'фгос' in title.lower() or 'фгт' in title.lower() or 'федеральные государственные образовательные стандарты' in title.lower():
+                    # Формируем специальное название с датой
+                    current_date = datetime.now().strftime('%d.%m.%Y')
+                    title = f"Обновление ФГОС_{current_date}"
                 
                 pdf_links.append({
                     'url': full_url,
