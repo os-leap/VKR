@@ -15,6 +15,9 @@ from auth import auth
 from data_utils import load_data
 from scheduler import background_job, start_scheduler
 from utils import extract_content_from_pdf, fetch_edsoo_documents, download_document, logger, sync_edsoo
+from scrape_pdfs import PDFScraper
+import threading
+import time
 from Filter import FilterManager
 from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
@@ -1300,10 +1303,71 @@ def manage_users():
     return render_template("manage_users.html", users=users)
 
 
+# Глобальная переменная для отслеживания статуса последнего запуска
+last_run_status = {"running": False, "completed": False, "progress": "", "timestamp": None}
+
+def run_scraper_in_thread():
+    """Запуск скрапера в отдельном потоке"""
+    global last_run_status
+    last_run_status["running"] = True
+    last_run_status["completed"] = False
+    last_run_status["progress"] = "Начинаю процесс парсинга..."
+    last_run_status["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    
+    try:
+        scraper = PDFScraper()
+        scraper.process_pdfs()
+        last_run_status["progress"] = "Процесс завершен успешно!"
+    except Exception as e:
+        last_run_status["progress"] = f"Ошибка: {str(e)}"
+    finally:
+        last_run_status["running"] = False
+        last_run_status["completed"] = True
+
+def schedule_periodic_updates():
+    """Функция для периодического запуска обновления (запуск в фоновом режиме)"""
+    while True:
+        # Ждем 24 часа перед следующим запуском (в реальном приложении можно использовать более точный планировщик)
+        time.sleep(24 * 60 * 60)  # 24 часа в секундах
+        
+        # Запускаем обновление
+        if not last_run_status["running"]:
+            print("Автоматический запуск обновления системы...")
+            scraper = PDFScraper()
+            scraper.process_pdfs()
+
 def start_background_tasks():
     schedule.every().monday.at("00:00").do(sync_edsoo)
+    
+    # Запускаем фоновый поток для периодических обновлений PDF
+    scheduler_thread = threading.Thread(target=schedule_periodic_updates, daemon=True)
+    scheduler_thread.start()
+    
     thread = threading.Thread(target=background_job, daemon=True)
     thread.start()
+
+@app.route('/api/status')
+def get_status():
+    """API endpoint для получения статуса последнего запуска"""
+    return jsonify(last_run_status)
+
+@app.route('/api/run', methods=['POST'])
+def run_scraper_api():
+    """Запуск процесса скрапинга по запросу"""
+    global last_run_status
+    if not last_run_status["running"]:
+        thread = threading.Thread(target=run_scraper_in_thread)
+        thread.start()
+        return jsonify({"status": "started", "message": "Процесс запущен"})
+    else:
+        return jsonify({"status": "error", "message": "Процесс уже запущен"})
+
+@app.route('/update-system')
+def update_system():
+    """Страница для обновления системы"""
+    if "user" not in session or session["user"]["role"] != "admin":
+        return "Доступ запрещён", 403
+    return render_template('update_system.html', status=last_run_status)
 
 if __name__ == "__main__":
     start_scheduler(app)  # Передаем app в start_scheduler
