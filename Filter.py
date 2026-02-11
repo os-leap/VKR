@@ -27,6 +27,15 @@ class FilterManager:
     def get_unique_topics(self):
         """Возвращает список уникальных тем"""
         topics = set(["Все темы", "Без темы"])
+        # Добавляем темы из filters.json
+        try:
+            with open("filters.json", "r", encoding="utf-8") as f:
+                filters = json.load(f)
+                if "topics" in filters:
+                    topics.update(filters["topics"])
+        except FileNotFoundError:
+            pass
+        
         for entry in self.data:  # Исправлено: self.data вместо self
             topic = entry.get("topic", "Без темы")
             topics.add(topic)
