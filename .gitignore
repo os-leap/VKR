@@ -1,1 +1,13 @@
-(scrape_pdfs.py is a source file, and there are no build artifacts, dependencies, or temporary files in the changes)
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PDF downloads (assuming these are downloaded/temporary files)
+pdf_downloads/
+
+# Logs
+*.log
+```
