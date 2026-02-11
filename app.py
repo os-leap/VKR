@@ -617,9 +617,21 @@ def index():
     unique_parallels = advanced_filter_manager.get_unique_parallels()
     unique_subjects = advanced_filter_manager.get_unique_subjects()
     
+    # Загружаем документы из pdf_documents.json
+    pdf_documents = []
+    try:
+        with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+            pdf_documents = json.load(f)
+    except FileNotFoundError:
+        pdf_documents = []
+    except Exception as e:
+        print(f"Ошибка при загрузке pdf_documents.json: {e}")
+        pdf_documents = []
+    
     return render_template(
         "index.html",
         entries=filtered_data,
+        pdf_documents=pdf_documents,  # Передаем документы из pdf_documents.json в шаблон
         format_date=format_date,
         topics=filter_manager.get_unique_topics(),
         selected_topic=selected_topic,

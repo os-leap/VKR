@@ -1,1 +1,35 @@
-(scrape_pdfs.py is a source file, and there are no build artifacts, dependencies, or temporary files in the changes)
+```gitignore
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Virtual environments
+venv/
+.venv/
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# Editor/IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+dist/
+target/
+
+# Dependencies
+node_modules/
+.mypy_cache/
+.pytest_cache/
+coverage/
+htmlcov/
+```
