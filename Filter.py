@@ -148,6 +148,46 @@ class FilterManager:
             "10": ["10", "десятый", "десятом"],
             "11": ["11", "одиннадцатый", "одиннадцатом"]
         }
+
+        # Добавляем уровни классов из filters.json
+        import json
+        import os
+        if os.path.exists("filters.json"):
+            with open("filters.json", "r", encoding="utf-8") as f:
+                filters_data = json.load(f)
+                for class_level in filters_data.get("classes", []):
+                    # Приводим к строковому формату для сопоставления
+                    str_class_level = str(class_level)
+                    if str_class_level not in class_patterns:
+                        # Добавляем цифровое обозначение и возможные словесные формы
+                        word_forms = []
+                        if str_class_level == "1":
+                            word_forms = ["первый", "первом", "один"]
+                        elif str_class_level == "2":
+                            word_forms = ["второй", "втором"]
+                        elif str_class_level == "3":
+                            word_forms = ["третий", "третьем"]
+                        elif str_class_level == "4":
+                            word_forms = ["четвертый", "четвертом"]
+                        elif str_class_level == "5":
+                            word_forms = ["пятый", "пятом"]
+                        elif str_class_level == "6":
+                            word_forms = ["шестой", "шестом"]
+                        elif str_class_level == "7":
+                            word_forms = ["седьмой", "седьмом"]
+                        elif str_class_level == "8":
+                            word_forms = ["восьмой", "восьмом"]
+                        elif str_class_level == "9":
+                            word_forms = ["девятый", "девятом"]
+                        elif str_class_level == "10":
+                            word_forms = ["десятый", "десятом", "десять"]
+                        elif str_class_level == "11":
+                            word_forms = ["одиннадцатый", "одиннадцатом", "одиннадцать"]
+                        else:
+                            # Для других классов создаем базовые формы
+                            word_forms = [str_class_level]
+                        
+                        class_patterns[str_class_level] = [str_class_level] + word_forms
         
         # Шаблоны для поиска предметов
         subject_patterns = {
@@ -166,6 +206,20 @@ class FilterManager:
             "алгебра": ["алгебра", "алгебре", "алгебры"],
             "геометрия": ["геометрия", "геометрии", "геометрии"]
         }
+
+        # Добавляем предметы из filters.json
+        import json
+        import os
+        if os.path.exists("filters.json"):
+            with open("filters.json", "r", encoding="utf-8") as f:
+                filters_data = json.load(f)
+                for subject in filters_data.get("subjects", []):
+                    # Приводим к нижнему регистру для сопоставления
+                    lower_subject = subject.lower()
+                    if lower_subject not in subject_patterns:
+                        # Создаем шаблон для сопоставления - используем сам предмет и его части
+                        subject_parts = lower_subject.split()
+                        subject_patterns[lower_subject] = [lower_subject] + subject_parts
         
         # Поиск уровня класса
         for level, patterns in class_patterns.items():
