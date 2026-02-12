@@ -171,7 +171,10 @@
               {% if entry.file %}
                 <div class="entry-file">
                   <span>📎 Файл: </span>
-                  <a href="{{ url_for('uploaded_file', filename=entry.file) }}" target="_blank">{{ entry.file }}</a>
+                  <a href="{{ url_for('uploaded_file', filename=entry.file) }}" 
+                     target="_blank" 
+                     data-file-preview 
+                     data-filename="{{ entry.file }}">{{ entry.file }}</a>
                 </div>
               {% endif %}
             </div>
