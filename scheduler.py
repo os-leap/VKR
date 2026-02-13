@@ -18,6 +18,9 @@ def start_scheduler(app):
     
     # Ежедневное резервное копирование в полночь
     schedule.every().day.at("00:00").do(create_daily_backup)
+    
+    # Создание резервной копии каждые 10 минут
+    schedule.every(10).minutes.do(create_daily_backup)
 
     # Запуск в отдельном потоке
     def run_scheduler():

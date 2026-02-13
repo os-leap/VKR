@@ -27,6 +27,15 @@ class FilterManager:
     def get_unique_topics(self):
         """Возвращает список уникальных тем"""
         topics = set(["Все темы", "Без темы"])
+        # Добавляем темы из filters.json
+        try:
+            with open("filters.json", "r", encoding="utf-8") as f:
+                filters = json.load(f)
+                if "topics" in filters:
+                    topics.update(filters["topics"])
+        except FileNotFoundError:
+            pass
+        
         for entry in self.data:  # Исправлено: self.data вместо self
             topic = entry.get("topic", "Без темы")
             topics.add(topic)
@@ -93,12 +102,18 @@ class FilterManager:
         
         # Попробуем определить, является ли запрос запросом по образовательным меткам
         class_level, parallel, subject = self._parse_education_tags(keywords)
-        
+
+        # Также проверим, совпадает ли какой-либо из ключевых слов с темами
+        matched_topic = self._find_matching_topic(keywords)
+
+        # Если найдено совпадение с темой, возвращаем все записи с этой темой
+        if matched_topic:
+            return self.filter_by_topic(matched_topic)
         # Если удалось распознать образовательные метки, используем расширенный поиск
-        if class_level or subject:
+        elif class_level or subject:
             return self.advanced_search_by_education_tags(
-                class_level=class_level, 
-                parallel=parallel, 
+                class_level=class_level,
+                parallel=parallel,
                 subject=subject
             )
         
@@ -121,6 +136,28 @@ class FilterManager:
                 results.append(entry)
         
         return results
+
+    def _find_matching_topic(self, keywords):
+        """
+        Проверяет, совпадает ли какой-либо из ключевых слов с темами
+        Возвращает название темы, если найдено совпадение, иначе None
+        """
+        # Получаем все возможные темы
+        all_topics = self.get_unique_topics()
+        
+        # Убираем служебные темы из поиска
+        filter_topics = [topic for topic in all_topics if topic not in ["Все темы", "Без темы"]]
+        
+        # Приводим все ключевые слова к нижнему регистру для сопоставления
+        lower_keywords = [kw.lower() for kw in keywords]
+        
+        # Проверяем, есть ли совпадения между ключевыми словами и темами
+        for keyword in lower_keywords:
+            for topic in filter_topics:
+                if keyword.lower() == topic.lower():
+                    return topic
+        
+        return None
 
     def _parse_education_tags(self, keywords):
         """
