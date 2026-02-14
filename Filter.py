@@ -2,6 +2,7 @@ import json
 import os
 import re
 from datetime import datetime
+from simple_semantic_search import SimpleSemanticSearchEngine
 
 
 class FilterManager:
@@ -10,6 +11,8 @@ class FilterManager:
     def __init__(self, data_file="knowledge_base.json"):
         self.data_file = data_file
         self.data = self._load_data()
+        self.semantic_search_engine = None
+        self._setup_semantic_search()
 
     def _load_data(self):
         """Загружает данные из файла"""
@@ -17,6 +20,30 @@ class FilterManager:
             with open(self.data_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         return []
+
+    def _setup_semantic_search(self):
+        """Настройка семантического поиска"""
+        if self.data:
+            # Подготовка документов для семантического поиска
+            documents = []
+            entries_data = []
+            for entry in self.data:
+                title = entry.get('title', '')
+                content = entry.get('content', '')
+                topic = entry.get('topic', '')
+                
+                # Объединяем все текстовые поля для лучшего контекста
+                document = f"{title} {content} {topic}".strip()
+                documents.append(document)
+                entries_data.append(entry)
+            
+            # Инициализируем семантический поисковый движок
+            try:
+                self.semantic_search_engine = SimpleSemanticSearchEngine()
+                self.semantic_search_engine.add_documents(documents, entries_data)
+            except Exception as e:
+                print(f"Ошибка при инициализации семантического поиска: {e}")
+                self.semantic_search_engine = None
 
     def _save_data(self, data):
         """Сохраняет данные в файл"""
@@ -77,8 +104,44 @@ class FilterManager:
         if 0 <= index < len(self.data):
             self.data[index]["topic"] = new_topic
             self._save_data(self.data)
+            # Перенастраиваем семантический поиск с обновленными данными
+            self._setup_semantic_search()
             return True
         return False
+
+    def semantic_search(self, query, top_k=10):
+        """
+        Выполняет семантический поиск по базе знаний
+        
+        Args:
+            query: поисковый запрос
+            top_k: количество возвращаемых результатов
+            
+        Returns:
+            список записей, наиболее релевантных запросу
+        """
+        if not self.semantic_search_engine:
+            # Если семантический поиск не инициализирован, возвращаем пустой результат
+            print("Предупреждение: Семантический поиск не инициализирован")
+            return []
+        
+        try:
+            # Выполняем семантический поиск
+            results = self.semantic_search_engine.search(query, top_k=top_k)
+            
+            # Преобразуем результаты в формат, совместимый с базой знаний
+            search_results = []
+            for doc_idx, similarity_score in results:
+                if doc_idx < len(self.data):
+                    entry = self.data[doc_idx].copy()
+                    # Добавляем информацию о схожести для возможного использования в интерфейсе
+                    entry['_similarity_score'] = similarity_score
+                    search_results.append(entry)
+            
+            return search_results
+        except Exception as e:
+            print(f"Ошибка при выполнении семантического поиска: {e}")
+            return []
 
     def format_date(self, date_str):
         """Форматирует дату для отображения"""
