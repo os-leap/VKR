@@ -26,16 +26,16 @@
         </div>
 
         <div class="form-group">
-            <label for="file">Файл (PDF, Word, TXT):</label>
-            <input type="file" id="file" name="file">
+            <label for="file">Файлы (PDF, Word, TXT) (можно выбрать несколько):</label>
+            <input type="file" id="file" name="file" multiple>
         </div>
 
-        {% if entry.file %}
-            <div class="current-file">
-                <p>Текущий файл:
-                    <a href="{{ url_for('uploaded_file', filename=entry.file) }}" target="_blank">
-                        {{entry.file}}
-                    </a>
+        {% if entry.files %}
+            <div class="current-files">
+                <p>Текущие файлы:
+                {% for file in entry.files %}
+                    <a href="{{ url_for('uploaded_file', filename=file) }}" target="_blank">{{ file }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
                 </p>
             </div>
         {% endif %}

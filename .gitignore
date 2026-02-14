@@ -1,5 +1,1 @@
-(static/js/file-preview.js has been added, and other files in static/, templates/ are modified - this appears to be a web project with source files only, no build artifacts, dependencies, or temp files in the changes)
-
-(static files like .js, .css and template files .html are source code that should not be ignored)
-
-(output nothing since only source/config files are present)
+(empty)

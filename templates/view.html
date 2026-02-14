@@ -7,8 +7,22 @@
     <pre>{{ entry.content }}</pre>
 
 
-<!-- Проверка наличия файла -->
-{% if entry.file %}
+<!-- Проверка наличия файлов -->
+{% if entry.files %}
+    <p><strong>Создано:</strong> {{ format_date(entry.created_at) }}</p>
+    <p><strong>Автор:</strong> {{entry.author}}</p>
+  <p>
+    Прикрепленные файлы:
+    {% for file in entry.files %}
+      <br><a href="{{ url_for('uploaded_file', filename=file) }}" 
+         target="_blank" 
+         data-file-preview 
+         data-filename="{{file}}">
+        📥 Скачать файл: {{file}}
+      </a>
+    {% endfor %}
+  </p>
+{% elif entry.file %}
     <p><strong>Создано:</strong> {{ format_date(entry.created_at) }}</p>
     <p><strong>Автор:</strong> {{entry.author}}</p>
   <p>

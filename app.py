@@ -762,29 +762,33 @@ def add_entry():
         if any(entry["title"] == title for entry in data):
             return "Запись с таким заголовком уже существует", 400
 
-        # Обработка файла
-        filename = None
-        if file and file.filename:
-            if allowed_file(file.filename):
-                try:
-                    filename = secure_filename(file.filename)
-                    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-                    file.save(file_path)
-                    # Дополнительная проверка сохранения файла
-                    if not os.path.exists(file_path):
-                        raise Exception("Файл не был сохранен на диск")
-                except Exception as e:
-                    logging.error(f"Ошибка при сохранении файла {filename}: {str(e)}")
-                    return "Ошибка при сохранении файла", 500
-            else:
-                return "Недопустимый тип файла. Разрешенные типы: pdf, docx, txt, doc, rtf", 400
+        # Обработка файлов (множественная загрузка)
+        filenames = []
+        files = request.files.getlist("file")
+        
+        for file in files:
+            if file and file.filename:
+                if allowed_file(file.filename):
+                    try:
+                        filename = secure_filename(file.filename)
+                        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                        file.save(file_path)
+                        # Дополнительная проверка сохранения файла
+                        if not os.path.exists(file_path):
+                            raise Exception("Файл не был сохранен на диск")
+                        filenames.append(filename)
+                    except Exception as e:
+                        logging.error(f"Ошибка при сохранении файла {filename}: {str(e)}")
+                        return "Ошибка при сохранении файла", 500
+                else:
+                    return "Недопустимый тип файла. Разрешенные типы: pdf, docx, txt, doc, rtf", 400
 
         # Создаем новую запись
         new_entry = {
             "title": title,
             "content": content,
             "topic": topic,
-            "file": filename,
+            "files": filenames,  # Сохраняем список файлов вместо одного файла
             "author": session["user"]["username"],
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat(),
@@ -815,15 +819,16 @@ def add_entry():
                 username=session["user"]["username"],
                 action_type="add",
                 target=title,
-                details=f"Добавлена новая запись в теме '{topic}'" + (" с файлом" if filename else "")
+                details=f"Добавлена новая запись в теме '{topic}'" + (f" с {len(filenames)} файлами" if filenames else "")
             )
 
             return redirect(url_for("index"))
         except Exception as e:
             logging.error(f"Ошибка при сохранении записи '{title}': {str(e)}")
-            # Если был загружен файл, удаляем его
-            if filename and os.path.exists(os.path.join(app.config["UPLOAD_FOLDER"], filename)):
-                os.remove(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+            # Если были загружены файлы, удаляем их
+            for filename in filenames:
+                if os.path.exists(os.path.join(app.config["UPLOAD_FOLDER"], filename)):
+                    os.remove(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             return "Ошибка при сохранении записи", 500
 
     # Для GET-запроса отображаем форму добавления
@@ -866,7 +871,7 @@ def edit_entry(id):
         new_title = request.form.get("title", "").strip()
         new_topic = request.form.get("topic", "Без темы").strip()
         new_content = request.form.get("content", "").strip()
-        file = request.files.get("file")
+        files = request.files.getlist("file")
 
         # Генерация заголовка, если он пустой
         if not new_title:
@@ -891,15 +896,26 @@ def edit_entry(id):
         entry["author"] = session["user"]["username"]  # Устанавливаем автора
         entry["updated_at"] = datetime.now().isoformat()
 
-        # Обработка файла
-        if file and allowed_file(file.filename):
-            old_file = entry.get("file")
-            if old_file:
-                old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            entry["file"] = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], entry["file"]))
+        # Обработка файлов (множественная загрузка)
+        if files and any(f for f in files if f.filename):  # Если есть хотя бы один файл
+            # Удаляем старые файлы, если они есть
+            old_files = entry.get("files", [])
+            if old_files:
+                for old_file in old_files:
+                    old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+            
+            # Сохраняем новые файлы
+            new_filenames = []
+            for file in files:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                    new_filenames.append(filename)
+            
+            # Обновляем поле с файлами в записи
+            entry["files"] = new_filenames
 
         save_data(data)
 
@@ -1152,7 +1168,7 @@ def edit_entry_by_id(entry_id):
         new_title = request.form.get("title", "").strip()
         new_topic = request.form.get("topic", "Без темы").strip()
         new_content = request.form.get("content", "").strip()
-        file = request.files.get("file")
+        files = request.files.getlist("file")
 
         # Генерация заголовка, если он пустой
         if not new_title:
@@ -1177,15 +1193,26 @@ def edit_entry_by_id(entry_id):
         entry["author"] = session["user"]["username"]  # Устанавливаем автора
         entry["updated_at"] = datetime.now().isoformat()
 
-        # Обработка файла
-        if file and allowed_file(file.filename):
-            old_file = entry.get("file")
-            if old_file:
-                old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            entry["file"] = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], entry["file"]))
+        # Обработка файлов (множественная загрузка)
+        if files and any(f for f in files if f.filename):  # Если есть хотя бы один файл
+            # Удаляем старые файлы, если они есть
+            old_files = entry.get("files", [])
+            if old_files:
+                for old_file in old_files:
+                    old_path = os.path.join(app.config["UPLOAD_FOLDER"], old_file)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+            
+            # Сохраняем новые файлы
+            new_filenames = []
+            for file in files:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                    new_filenames.append(filename)
+            
+            # Обновляем поле с файлами в записи
+            entry["files"] = new_filenames
 
         save_data(data)
 
