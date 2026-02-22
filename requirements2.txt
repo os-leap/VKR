@@ -1,0 +1,1 @@
+beautifulsoup4,bcrypt,schedule,requests,pdfplumber,PyPDF2,numpy,scikit-learn,nltk,flask_wtf

@@ -198,11 +198,25 @@
         "file": null,
         "author": "admin",
         "created_at": "2026-02-10T21:51:59.997236",
-        "updated_at": "2026-02-10T21:51:59.997242",
+        "updated_at": "2026-02-16T14:02:02.332545",
         "id": "94d78b08-5d37-4c68-94aa-8939e125d494",
         "education_info": {
             "class": "1",
             "subject": "ИЗО"
-        }
+        },
+        "files": []
+    },
+    {
+        "title": "asda",
+        "content": "asdasd",
+        "topic": "д/з",
+        "files": [
+            "8__.docx",
+            "-401-15.docx"
+        ],
+        "author": "admin",
+        "created_at": "2026-02-16T14:02:50.587342",
+        "updated_at": "2026-02-16T14:02:50.587342",
+        "id": "6fed1853-218b-4199-b8bf-62ac4047d1b9"
     }
 ]

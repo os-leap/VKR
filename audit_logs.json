@@ -128,5 +128,37 @@
         "target": "asd",
         "details": "Добавлена новая запись в теме 'Без темы'",
         "entry_id": null
+    },
+    {
+        "id": "1771232522.429176",
+        "timestamp": "2026-02-16T14:02:02.429176",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "asd",
+        "details": "Изменение записи",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": "asd",
+        "new_value": "asd"
+    },
+    {
+        "id": "1771232570.140419",
+        "timestamp": "2026-02-16T14:02:50.140419",
+        "username": "admin",
+        "action_type": "add",
+        "target": "asda",
+        "details": "Добавлена новая запись в теме 'д/з' с 2 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1771232570.766797",
+        "timestamp": "2026-02-16T14:02:50.766797",
+        "username": "admin",
+        "action_type": "add",
+        "target": "asda",
+        "details": "Добавлена новая запись в теме 'д/з' с 2 файлами",
+        "entry_id": null,
+        "backup_id": null
     }
 ]
