@@ -1234,7 +1234,12 @@ def view_entry_by_id(entry_id):
     entry = find_entry_by_id(data, entry_id)
     if not entry:
         return "Запись не найдена", 404
-    return render_template("view.html", entry=entry, format_date=format_date)
+    
+    # Initialize enhanced search system and find similar materials
+    enhanced_search_system = initialize_enhanced_search_system(data)
+    similar_materials = enhanced_search_system.find_similar_materials(int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000), limit=5)
+    
+    return render_template("view.html", entry=entry, similar_materials=similar_materials, format_date=format_date)
 
 
 @app.route("/edit/id/<entry_id>", methods=["GET", "POST"])

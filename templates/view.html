@@ -40,4 +40,28 @@
 <br>
 <a href="{{ url_for('index') }}">Назад</a>
 
+<!-- Отображение похожих записей -->
+{% if similar_materials %}
+<div class="similar-materials">
+    <h3>Похожие материалы</h3>
+    <ul>
+    {% for material in similar_materials %}
+        <li>
+            <a href="{{ url_for('view_entry', id=material.id) }}">{{ material.title }}</a>
+            {% if material.fgo_list %}
+            <div class="fgo-list">
+                <strong>ФГОС:</strong>
+                <ul>
+                {% for fgo in material.fgo_list %}
+                    <li>{{ fgo }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
 {% endblock %}
