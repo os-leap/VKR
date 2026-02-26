@@ -134,17 +134,6 @@
         "id": "55ec5f3e-8846-4852-991a-3f2c7b15a09d"
     },
     {
-        "title": "Скачать PDF",
-        "content": "\n\n\n\n\n\n",
-        "file": "Скачать_PDF.pdf",
-        "source": "edsoo.ru",
-        "created_at": "2025-07-18T20:18:31.875484",
-        "updated_at": "2026-01-26T01:24:54.650332",
-        "author": "system",
-        "topic": "Без темы",
-        "id": "43fc106d-049b-49f0-a8cc-c68130e319e8"
-    },
-    {
         "title": "ФГОС НОО",
         "content": "чясчясчяс",
         "author": "admin",
@@ -163,60 +152,20 @@
         "id": "598d0d39-61da-4403-bc38-7f7b1c01200d"
     },
     {
-        "title": "яыыы",
-        "content": "ыыыы",
-        "author": "admin",
-        "created_at": "2025-07-29T21:04:48.879734",
-        "updated_at": "2025-07-29T21:04:48.879749",
-        "topic": "Без темы",
-        "id": "a0a60695-2206-466c-85df-6ea78336f2c8"
-    },
-    {
-        "title": "zxc",
-        "content": "zxc",
-        "file": "PDF.pdf",
-        "author": "admin",
-        "created_at": "2025-07-30T14:40:27.127578",
-        "updated_at": "2025-07-30T14:40:27.127592",
-        "topic": "Без темы",
-        "id": "8588c704-dd37-4b80-b266-a9a1dd795fd6"
-    },
-    {
-        "title": "расчетный лист",
-        "content": "лист",
-        "topic": "Без темы",
-        "file": "2025.pdf",
-        "author": "admin",
-        "created_at": "2025-12-06T17:54:28.644272",
-        "updated_at": "2025-12-06T17:54:28.644282",
-        "id": "7a27b1ee-5e45-4464-acb2-269fd31fccb4"
-    },
-    {
-        "title": "asd",
-        "content": "asd",
-        "topic": "Без темы",
-        "file": null,
-        "author": "admin",
-        "created_at": "2026-02-10T21:51:59.997236",
-        "updated_at": "2026-02-16T14:02:02.332545",
-        "id": "94d78b08-5d37-4c68-94aa-8939e125d494",
-        "education_info": {
-            "class": "1",
-            "subject": "ИЗО"
-        },
-        "files": []
-    },
-    {
-        "title": "asda",
-        "content": "asdasd",
+        "title": "заголовок",
+        "content": "выполнить до 27.02",
         "topic": "д/з",
         "files": [
-            "8__.docx",
-            "-401-15.docx"
+            "2022_.pdf"
         ],
         "author": "admin",
-        "created_at": "2026-02-16T14:02:50.587342",
-        "updated_at": "2026-02-16T14:02:50.587342",
-        "id": "6fed1853-218b-4199-b8bf-62ac4047d1b9"
+        "created_at": "2026-02-26T18:37:51.128161",
+        "updated_at": "2026-02-26T18:37:51.128161",
+        "id": "01c67f7a-d40c-4748-abb5-12a86f3a81e6",
+        "education_info": {
+            "class": "10",
+            "parallel": "В",
+            "subject": "Русский язык"
+        }
     }
 ]

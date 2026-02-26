@@ -1,17 +1,1 @@
-[
-    {
-        "username": "admin",
-        "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC",
-        "role": "admin"
-    },
-    {
-        "username": "user1",
-        "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC",
-        "role": "user"
-    },
-    {
-        "username": "admin1",
-        "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC",
-        "role": "admin"
-    }
-]
+[{"username": "admin", "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC", "role": "admin"}, {"username": "user1", "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC", "role": "user"}, {"username": "admin1", "password_hash": "$2b$12$pviXgt0MReih8oXkRCOFperhLGn0Fg8VTNvy12wxx00ctv28P4rEC", "role": "editor"}, {"username": "admin2", "password_hash": "$2b$12$/U7lgLOYn/mkghiDGTUnrO7CT.v6QCWIZW9Y0IVuV1RrGtGAfLQa2", "role": "editor"}]
