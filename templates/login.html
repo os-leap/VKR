@@ -144,15 +144,8 @@
             <button type="submit">Войти</button>
         </form>
 
-        <div class="register-link">
-            Нет аккаунта? <a href="{{ url_for('auth.register') }}">Зарегистрироваться</a>
-        </div>
 
-        {% if not session.user %}
-            <div class="login-options">
-                <a href="{{ url_for('login') }}" class="login-btn">Войти снова</a>
-            </div>
-        {% endif %}
     </div>
 </body>
+
 </html>
