@@ -23,6 +23,7 @@ from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
 from simple_semantic_search_integration import initialize_search_system, perform_integrated_search
 from backup_system import backup_system, create_daily_backup
+from enhanced_search_system import EnhancedSearchSystem, EnhancedMaterial, FGOHeadersProcessor
 init_audit_system()
 
 
@@ -482,6 +483,50 @@ def load_data():
             return data
     return []
 
+
+def initialize_enhanced_search_system(data):
+    """Initialize the enhanced search system with data from knowledge base"""
+    search_system = EnhancedSearchSystem()
+    
+    for entry in data:
+        # Get content from entry
+        content = entry.get("content", "")
+        
+        # Get files associated with entry
+        files = entry.get("files", [])
+        file_paths = []
+        for filename in files:
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            if os.path.exists(file_path):
+                file_paths.append(file_path)
+        
+        # For now, we'll use the first file if available, or None
+        file_path = file_paths[0] if file_paths else None
+        
+        # Extract FGOs list if available in entry
+        fgo_list = entry.get("fgo_list", [])
+        
+        # Determine grade and subject from education info if available
+        education_info = entry.get("education_info", {})
+        grade = education_info.get("class", "")  # Using class as grade
+        subject = education_info.get("subject", "общее")  # Default to general subject
+        
+        # Create EnhancedMaterial object
+        material = EnhancedMaterial(
+            title=entry.get("title", ""),
+            description=content[:100] + "..." if len(content) > 100 else content,  # First 100 chars as description
+            grade=grade,
+            subject=subject,
+            content=content,
+            file_path=file_path,
+            tags=entry.get("tags", []),
+            fgo_list=fgo_list
+        )
+        
+        search_system.add_material(material)
+    
+    return search_system
+
 def save_data(data):
     for entry in data:
         if "author" not in entry or not entry["author"]:
@@ -777,6 +822,15 @@ def add_entry():
                         if not os.path.exists(file_path):
                             raise Exception("Файл не был сохранен на диск")
                         filenames.append(filename)
+                        
+                        # Если это PDF файл, извлекаем возможные ФГОС заголовки из имени файла
+                        if filename.lower().endswith('.pdf'):
+                            processor = FGOHeadersProcessor()
+                            fgo_header = processor.generate_headers_from_filename(filename)
+                            
+                            # Обновляем заголовок записи, если в имени файла есть указание на ФГОС
+                            if 'фгос' in fgo_header.lower() or 'стандарт' in fgo_header.lower():
+                                title = fgo_header
                     except Exception as e:
                         logging.error(f"Ошибка при сохранении файла {filename}: {str(e)}")
                         return "Ошибка при сохранении файла", 500
@@ -848,7 +902,12 @@ def view_entry(id):
     entry = next((item for item in data if str(item.get('id')) == str(id)), None)
     if entry is None:
         return "Запись не найдена", 404
-    return render_template("view.html", entry=entry, format_date=format_date)
+    
+    # Initialize enhanced search system and find similar materials
+    enhanced_search_system = initialize_enhanced_search_system(data)
+    similar_materials = enhanced_search_system.find_similar_materials(int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000), limit=5)
+    
+    return render_template("view.html", entry=entry, similar_materials=similar_materials, format_date=format_date)
 
 
 @app.route("/edit/<id>", methods=["GET", "POST"])
@@ -1035,11 +1094,39 @@ def search_entry_get():
             if entry.get("topic", "Без темы") != selected_topic:
                 continue
 
-        # Используем синтаксически-осознанный поиск в заголовке и содержании
+        # Используем синтаксически-осознанный поиск в заголовке, содержании и файлах
         search_in_title = syntax_aware_search(entry["title"], query)
         search_in_content = syntax_aware_search(entry["content"], query)
+        
+        # Поиск в файлах, если они есть
+        search_in_files = False
+        if "files" in entry and entry["files"]:
+            for filename in entry["files"]:
+                file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                if os.path.exists(file_path):
+                    try:
+                        if file_path.endswith('.pdf'):
+                            import PyPDF2
+                            with open(file_path, 'rb') as f:
+                                pdf_reader = PyPDF2.PdfReader(f)
+                                file_content = ""
+                                for page in pdf_reader.pages:
+                                    file_content += page.extract_text()
+                                search_in_files = syntax_aware_search(file_content, query)
+                        elif file_path.endswith(('.txt', '.docx')):
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                file_content = f.read()
+                                search_in_files = syntax_aware_search(file_content, query)
+                    except Exception as e:
+                        print(f"Ошибка при чтении файла {file_path}: {e}")
+        
+        # Поиск в FGOs списках
+        search_in_fgoss = False
+        if "fgo_list" in entry and entry["fgo_list"]:
+            fgos_content = " ".join(entry["fgo_list"])
+            search_in_fgoss = syntax_aware_search(fgos_content, query)
 
-        if search_in_title or search_in_content:
+        if search_in_title or search_in_content or search_in_files or search_in_fgoss:
             results.append(entry)
     
     # Если синтаксический поиск не дал результатов, выполняем семантический поиск
@@ -1090,7 +1177,9 @@ def extract_filters_from_query(query):
         'физкультура': 'Физкультура',
         'изо': 'ИЗО',
         'музыка': 'Музыка',
-        'технология': 'Технология'
+        'технология': 'Технология',
+        'фгос': 'ФГОС',
+        'стандарт': 'Федеральные государственные образовательные стандарты'
     }
     
     # Ищем предмет в запросе
