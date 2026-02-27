@@ -1,43 +1,8 @@
-```
-# Compiled and binary files
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.so
-*.dll
-*.exe
+# Web artifacts
+*.html
 
-# Dependencies
-.venv/
-venv/
-env/
-requirements.txt.bak
+Wait, I need to reconsider this. HTML files are typically source code files, not build artifacts. Based on rule #7, I should not ignore source code files unless they are clearly generated or sensitive. An HTML file like 'pdf_viewer.html' is likely a source file that should be tracked in version control.
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.swo
+Since only source/config files were added (HTML file), and no build artifacts, dependencies, or temp files were included in the changes, the output should be empty.
 
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-*.pyc
-*~
-
-# Coverage and testing
-.coverage
-coverage/
-htmlcov/
-
-# Build directories
-build/
-dist/
-*.egg-info/
-```
+(pdf_viewer.html is a source file, not a build artifact)
