@@ -906,7 +906,12 @@ def view_entry(id):
     
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
-    similar_materials = enhanced_search_system.find_similar_materials(int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000), limit=5)
+    try:
+        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
+        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+    except Exception as e:
+        print(f"Error finding similar materials: {e}")
+        similar_materials = []
     
     return render_template("view.html", entry=entry, similar_materials=similar_materials, format_date=format_date)
 
@@ -1238,7 +1243,12 @@ def view_entry_by_id(entry_id):
     
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
-    similar_materials = enhanced_search_system.find_similar_materials(int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000), limit=5)
+    try:
+        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
+        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+    except Exception as e:
+        print(f"Error finding similar materials: {e}")
+        similar_materials = []
     
     return render_template("view.html", entry=entry, similar_materials=similar_materials, format_date=format_date)
 
