@@ -1,14 +1,24 @@
 ```
-# Python
-__pycache__/
+# Compiled and binary files
 *.pyc
-*.pyo
-*.pyd
+__pycache__/
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+
+# Dependencies
+.venv/
+venv/
+env/
+requirements.txt.bak
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
 
 # Environment
 .env
@@ -18,14 +28,16 @@ __pycache__/
 # Editors
 .vscode/
 .idea/
+*.pyc
+*~
 
-# Dependencies
-.venv/
-venv/
-node_modules/
+# Coverage and testing
+.coverage
+coverage/
+htmlcov/
 
-# Build artifacts
-dist/
+# Build directories
 build/
-target/
+dist/
+*.egg-info/
 ```

@@ -799,7 +799,7 @@ def add_entry():
 
         # Генерация заголовка, если он пустой
         if not title:
-            title = generate_title_from_content(content)
+            title = generate_title_from_content(content, filename if 'filename' in locals() else "")
             # Дополнительная проверка, чтобы заголовок не был пустым
             if not title:
                 title = "Без заголовка"
@@ -941,7 +941,7 @@ def edit_entry(id):
 
         # Генерация заголовка, если он пустой
         if not new_title:
-            new_title = generate_title_from_content(new_content)
+            new_title = generate_title_from_content(new_content, entry.get("file", ""))
 
         if not new_title or not new_content:
             return "Поля не могут быть пустыми", 400
@@ -1132,8 +1132,25 @@ def search_entry_get():
         if "fgo_list" in entry and entry["fgo_list"]:
             fgos_content = " ".join(entry["fgo_list"])
             search_in_fgoss = syntax_aware_search(fgos_content, query)
+        
+        # Поиск в pdf_documents.json
+        search_in_pdf_docs = False
+        try:
+            with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+                pdf_documents = json.load(f)
+            
+            for doc in pdf_documents:
+                doc_text = f"{doc.get('title', '')} {doc.get('filename', '')} {doc.get('extracted_title', '')}".lower()
+                if syntax_aware_search(doc_text, query):
+                    search_in_pdf_docs = True
+                    break
+        except FileNotFoundError:
+            search_in_pdf_docs = False
+        except Exception as e:
+            print(f"Ошибка при поиске в pdf_documents.json: {e}")
+            search_in_pdf_docs = False
 
-        if search_in_title or search_in_content or search_in_files or search_in_fgoss:
+        if search_in_title or search_in_content or search_in_files or search_in_fgoss or search_in_pdf_docs:
             results.append(entry)
     
     # Если синтаксический поиск не дал результатов, выполняем семантический поиск
@@ -1207,15 +1224,85 @@ def extract_filters_from_query(query):
     return extracted_class, extracted_subject
 
 
-def generate_title_from_content(content):
-    """Генерирует заголовок из первых слов содержания"""
+def generate_title_from_content(content, filename=""):
+    """
+    Генерирует заголовок из первых слов содержания
+    Если в content есть "Заголовок не найден", используем имя файла для генерации заголовка
+    """
     if not content:
+        if filename:
+            # Remove extension and convert underscores/hyphens to spaces
+            title = os.path.splitext(filename)[0].replace('_', ' ').replace('-', ' ')
+            # Convert to more readable Russian text if possible
+            title = make_russian_readable(title)
+            return title[:100]  # Ограничиваем длину
         return "Без заголовка"
+    
+    # Check if content contains "Заголовок не найден" or similar
+    if "Заголовок не найден" in content or "No title found" in content.lower():
+        if filename:
+            # Use filename to generate a meaningful title
+            title = os.path.splitext(filename)[0].replace('_', ' ').replace('-', ' ')
+            # Convert to more readable Russian text if possible
+            title = make_russian_readable(title)
+            return title[:100]  # Ограничиваем длину
+        return "Без заголовка"
+    
     words = content.strip().split()
     title = ' '.join(words[:10])  # Первые 10 слов
     if len(title) > 100:  # Ограничиваем длину
         title = title[:100] + "..."
+    
+    # If we have a filename, append it to the title if the original content was unhelpful
+    if filename and ("Заголовок не найден" in content or len(content.strip()) < 20):
+        file_part = os.path.splitext(filename)[0].replace('_', ' ').replace('-', ' ')
+        file_part = make_russian_readable(file_part)
+        combined_title = f"{title} - {file_part}"[:100]
+        return combined_title
+    
     return title
+
+
+def make_russian_readable(text):
+    """Convert filename-friendly text to more readable Russian text"""
+    # Some common replacements to make filenames more readable in Russian
+    replacements = {
+        "fgos": "ФГОС",
+        "prikaz": "Приказ",
+        "obrazovanie": "Образование",
+        "standart": "Стандарт",
+        "metodicheskie": "Методические",
+        "rekomendaczii": "Рекомендации",
+        "organizacii": "Организации",
+        "procedur": "Процедур",
+        "oczenochnyh": "Оценочных",
+        "adaptaczionnyj": "Адаптационный",
+        "period": "Период",
+        "sentyabr": "Сентябрь",
+        "oktyabr": "Октябрь",
+        "noo": "НОО",
+        "ooo": "ООО",
+        "soo": "СОО",
+        "ministerstvo": "Министерство",
+        "prosveshenie": "Просвещение",
+        "rossijskoj": "Российской",
+        "federacii": "Федерации",
+        "ob": "Об",
+        "i": "И",
+        "na": "На",
+        "po": "По",
+        "ot": "От",
+        "№": "Номер ",
+        " ": " "
+    }
+    
+    result = text
+    for old, new in replacements.items():
+        result = result.replace(old, new)
+    
+    # Capitalize first letter of each sentence
+    result = '. '.join(s.capitalize() for s in result.split('. '))
+    return result
 
 
 
@@ -1278,7 +1365,7 @@ def edit_entry_by_id(entry_id):
 
         # Генерация заголовка, если он пустой
         if not new_title:
-            new_title = generate_title_from_content(new_content)
+            new_title = generate_title_from_content(new_content, entry.get("file", ""))
 
         if not new_title or not new_content:
             return "Поля не могут быть пустыми", 400
