@@ -47,7 +47,7 @@
     <ul>
     {% for material in similar_materials %}
         <li>
-            <a href="{{ url_for('view_entry_by_id', entry_id=material.id) }}">{{ material.title }}</a>
+            <a href="#" onclick="openMaterialInPopup('{{ url_for('view_entry_by_id', entry_id=material.original_id) }}'); return false;">{{ material.title }}</a>
             {% if material.fgo_list %}
             <div class="fgo-list">
                 <strong>ФГОС:</strong>

@@ -13,5 +13,46 @@
     </div>
     
     <script src="{{ url_for('static', filename='js/file-preview.js') }}"></script>
+    <script>
+        function openMaterialInPopup(url) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.className = 'material-popup-modal';
+            modal.innerHTML = `
+                <div class="material-popup-content">
+                    <div class="material-popup-header">
+                        <h3>Просмотр материала</h3>
+                        <button class="close-material-popup">&times;</button>
+                    </div>
+                    <div class="material-popup-body">
+                        <iframe src="${url}" width="100%" height="600px" style="border: none;"></iframe>
+                    </div>
+                    <div class="material-popup-footer">
+                        <button class="btn-close-material">Закрыть</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking close buttons
+            modal.querySelector('.close-material-popup').addEventListener('click', closeMaterialPopup);
+            modal.querySelector('.btn-close-material').addEventListener('click', closeMaterialPopup);
+            
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeMaterialPopup();
+                }
+            });
+        }
+
+        function closeMaterialPopup() {
+            const modal = document.querySelector('.material-popup-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+    </script>
 </body>
 </html>

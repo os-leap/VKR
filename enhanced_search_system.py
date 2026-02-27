@@ -10,7 +10,8 @@ from difflib import SequenceMatcher
 
 class EnhancedMaterial:
     """Enhanced class for representing educational material with content and file data"""
-    def __init__(self, title, description, grade, subject, content="", file_path=None, tags=None, fgo_list=None):
+    def __init__(self, title, description, grade, subject, content="", file_path=None, tags=None, fgo_list=None, original_id=None):
+        self.original_id = original_id  # Store the original database ID
         self.id = hash(title + str(grade) + subject) % 10000  # Simple ID generation
         self.title = title
         self.description = description

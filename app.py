@@ -521,7 +521,8 @@ def initialize_enhanced_search_system(data):
             content=content,
             file_path=file_path,
             tags=entry.get("tags", []),
-            fgo_list=fgo_list
+            fgo_list=fgo_list,
+            original_id=entry.get("id")  # Pass the original database ID
         )
         
         search_system.add_material(material)
