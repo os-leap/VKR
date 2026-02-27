@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о системе ролей пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .permission-true {
+            color: green;
+            font-weight: bold;
+        }
+        .permission-false {
+            color: red;
+            font-weight: bold;
+        }
+        .role-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .collapsible {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .collapsible:hover {
+            background-color: #ddd;
+        }
+        .content {
+            padding: 0 18px;
+            display: none;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+        .active, .collapsible:hover {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Система ролей пользователей</h1>
+
+        <div class="role-section">
+            <button type="button" class="collapsible">Описание ролей</button>
+            <div class="content">
+                <h3>Администратор</h3>
+                <ul>
+                    <li><strong>Полный доступ ко всему</strong></li>
+                    <li>Может просматривать, редактировать, удалять любые записи</li>
+                    <li>Может создавать новые записи</li>
+                    <li>Имеет доступ к логам</li>
+                    <li>Может редактировать фильтры</li>
+                    <li>Может обновлять методические данные</li>
+                    <li>Может управлять пользователями</li>
+                    <li>Имеет доступ к административной панели</li>
+                </ul>
+
+                <h3>Редактор</h3>
+                <ul>
+                    <li><strong>Может редактировать или удалять любые записи и создавать свои</strong></li>
+                    <li>Может просматривать все записи</li>
+                    <li><strong>Не может</strong> просматривать логи</li>
+                    <li><strong>Не может</strong> редактировать фильтры</li>
+                    <li><strong>Имеет права</strong> обновлять методические данные при помощи сбора обновления</li>
+                    <li><strong>Не может</strong> управлять пользователями</li>
+                    <li><strong>Не имеет</strong> доступа к административной панели</li>
+                </ul>
+
+                <h3>Пользователь</h3>
+                <ul>
+                    <li><strong>Может создавать и просматривать любые записи</strong></li>
+                    <li><strong>Не может</strong> редактировать или удалять чужие записи других пользователей</li>
+                    <li><strong>Не может</strong> просматривать логи</li>
+                    <li><strong>Не может</strong> редактировать фильтры</li>
+                    <li><strong>Не может</strong> обновлять методические данные</li>
+                    <li><strong>Не может</strong> управлять пользователями</li>
+                    <li><strong>Не имеет</strong> доступа к административной панели</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="role-section">
+            <button type="button" class="collapsible">Таблица прав по ролям</button>
+            <div class="content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Роль</th>
+                            <th>Право</th>
+                            <th>Значение</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Администратор -->
+                        <tr>
+                            <td rowspan="9"><strong>Администратор</strong></td>
+                            <td>canViewAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может просматривать все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может редактировать все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canDeleteAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может удалять все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canCreate</td>
+                            <td class="permission-true">true</td>
+                            <td>Может создавать записи</td>
+                        </tr>
+                        <tr>
+                            <td>canViewLogs</td>
+                            <td class="permission-true">true</td>
+                            <td>Может просматривать логи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditFilters</td>
+                            <td class="permission-true">true</td>
+                            <td>Может редактировать фильтры</td>
+                        </tr>
+                        <tr>
+                            <td>canUpdateMethodicalData</td>
+                            <td class="permission-true">true</td>
+                            <td>Может обновлять методические данные</td>
+                        </tr>
+                        <tr>
+                            <td>canManageUsers</td>
+                            <td class="permission-true">true</td>
+                            <td>Может управлять пользователями</td>
+                        </tr>
+                        <tr>
+                            <td>canAccessAdminPanel</td>
+                            <td class="permission-true">true</td>
+                            <td>Имеет доступ к административной панели</td>
+                        </tr>
+
+                        <!-- Редактор -->
+                        <tr>
+                            <td rowspan="9"><strong>Редактор</strong></td>
+                            <td>canViewAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может просматривать все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может редактировать все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canDeleteAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может удалять все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canCreate</td>
+                            <td class="permission-true">true</td>
+                            <td>Может создавать записи</td>
+                        </tr>
+                        <tr>
+                            <td>canViewLogs</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может просматривать логи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditFilters</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может редактировать фильтры</td>
+                        </tr>
+                        <tr>
+                            <td>canUpdateMethodicalData</td>
+                            <td class="permission-true">true</td>
+                            <td>Может обновлять методические данные</td>
+                        </tr>
+                        <tr>
+                            <td>canManageUsers</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может управлять пользователями</td>
+                        </tr>
+                        <tr>
+                            <td>canAccessAdminPanel</td>
+                            <td class="permission-false">false</td>
+                            <td>Не имеет доступа к административной панели</td>
+                        </tr>
+
+                        <!-- Пользователь -->
+                        <tr>
+                            <td rowspan="9"><strong>Пользователь</strong></td>
+                            <td>canViewAll</td>
+                            <td class="permission-true">true</td>
+                            <td>Может просматривать все записи</td>
+                        </tr>
+                        <tr>
+                            <td>canCreate</td>
+                            <td class="permission-true">true</td>
+                            <td>Может создавать записи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditAll</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может редактировать чужие записи</td>
+                        </tr>
+                        <tr>
+                            <td>canDeleteAll</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может удалять чужие записи</td>
+                        </tr>
+                        <tr>
+                            <td>canViewLogs</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может просматривать логи</td>
+                        </tr>
+                        <tr>
+                            <td>canEditFilters</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может редактировать фильтры</td>
+                        </tr>
+                        <tr>
+                            <td>canUpdateMethodicalData</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может обновлять методические данные</td>
+                        </tr>
+                        <tr>
+                            <td>canManageUsers</td>
+                            <td class="permission-false">false</td>
+                            <td>Не может управлять пользователями</td>
+                        </tr>
+                        <tr>
+                            <td>canAccessAdminPanel</td>
+                            <td class="permission-false">false</td>
+                            <td>Не имеет доступа к административной панели</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="role-section">
+            <button type="button" class="collapsible">Структура файлов системы ролей</button>
+            <div class="content">
+                <ul>
+                    <li><strong>roles.js</strong> - Определение ролей и их прав</li>
+                    <li><strong>userPermissions.js</strong> - Пример использования и функции для проверки прав</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="role-section">
+            <button type="button" class="collapsible">Код определения ролей (roles.js)</button>
+            <div class="content">
+                <div class="code-block">
+const roles = {
+  admin: {
+    name: 'Администратор',
+    permissions: {
+      // Полный доступ ко всему
+      canViewAll: true,
+      canEditAll: true,
+      canDeleteAll: true,
+      canCreate: true,
+      canViewLogs: true,
+      canEditFilters: true,
+      canUpdateMethodicalData: true,
+      canManageUsers: true,
+      canAccessAdminPanel: true
+    }
+  },
+
+  editor: {
+    name: 'Редактор',
+    permissions: {
+      // Может редактировать или удалять любые записи и создавать свои
+      canViewAll: true,
+      canEditAll: true,
+      canDeleteAll: true,
+      canCreate: true,
+
+      // Не может просматривать логи
+      canViewLogs: false,
+
+      // Не может редактировать фильтры
+      canEditFilters: false,
+
+      // Имеет права обновлять методические данные
+      canUpdateMethodicalData: true,
+
+      // Остальные ограничения
+      canManageUsers: false,
+      canAccessAdminPanel: false
+    }
+  },
+
+  user: {
+    name: 'Пользователь',
+    permissions: {
+      // Может создавать и просматривать любые записи
+      canViewAll: true,
+      canCreate: true,
+
+      // Но не может редактировать или удалять чужие записи
+      canEditAll: false,
+      canDeleteAll: false,
+
+      // Также не может просматривать логи, редактировать фильтры и т.д.
+      canViewLogs: false,
+      canEditFilters: false,
+      canUpdateMethodicalData: false,
+      canManageUsers: false,
+      canAccessAdminPanel: false
+    }
+  }
+};
+
+module.exports = roles;
+                </div>
+            </div>
+        </div>
+
+        <div class="role-section">
+            <button type="button" class="collapsible">Код функций для работы с ролями (userPermissions.js)</button>
+            <div class="content">
+                <div class="code-block">
+/**\n * Функция для проверки прав пользователя\n * @param {string} role - Роль пользователя (admin, editor, user)\n * @param {string} permission - Право, которое нужно проверить\n * @returns {boolean} - Имеет ли пользователь указанное право\n */
+function checkPermission(role, permission) {
+  if (!roles[role]) {
+    console.error(`Неизвестная роль: ${role}`);
+    return false;
+  }
+
+  if (typeof roles[role].permissions[permission] === 'undefined') {
+    console.error(`Неизвестное право: ${permission}`);
+    return false;
+  }
+
+  return roles[role].permissions[permission];
+}
+
+/**\n * Функция для получения всех прав пользователя\n * @param {string} role - Роль пользователя\n * @returns {object} - Объект с правами пользователя\n */
+function getUserPermissions(role) {
+  if (!roles[role]) {
+    console.error(`Неизвестная роль: ${role}`);
+    return {};
+  }
+
+  return roles[role].permissions;
+}
+
+// Примеры использования
+console.log('Права администратора:', getUserPermissions('admin'));
+console.log('Права редактора:', getUserPermissions('editor'));
+console.log('Права пользователя:', getUserPermissions('user'));
+
+// Проверка конкретных прав
+console.log('\nПроверка прав:');
+console.log('Администратор может просматривать логи:', checkPermission('admin', 'canViewLogs'));
+console.log('Редактор может просматривать логи:', checkPermission('editor', 'canViewLogs'));
+console.log('Пользователь может редактировать все записи:', checkPermission('user', 'canEditAll'));
+console.log('Редактор может обновлять методические данные:', checkPermission('editor', 'canUpdateMethodicalData'));
+
+module.exports = {
+  checkPermission,
+  getUserPermissions
+};
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var coll = document.getElementsByClassName("collapsible");
+                var i;
+
+                for (i = 0; i < coll.length; i++) {
+                    coll[i].addEventListener("click", function() {
+                        this.classList.toggle("active");
+                        var content = this.nextElementSibling;
+                        if (content.style.display === "block") {
+                            content.style.display = "none";
+                        } else {
+                            content.style.display = "block";
+                        }
+                    });
+                }
+                
+                // Открываем все collapsible элементы по умолчанию
+                for (i = 0; i < coll.length; i++) {
+                    coll[i].classList.add("active");
+                    var content = coll[i].nextElementSibling;
+                    content.style.display = "block";
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>
