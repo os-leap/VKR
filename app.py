@@ -23,7 +23,8 @@ from advanced_filter import AdvancedFilterManager
 from forms import KnowledgeEntryForm
 from simple_semantic_search_integration import initialize_search_system, perform_integrated_search
 from backup_system import backup_system, create_daily_backup
-from enhanced_search_system import EnhancedSearchSystem, EnhancedMaterial, FGOHeadersProcessor
+from enhanced_search_system import EnhancedSearchSystem, EnhancedMaterial
+from fgo_headers_processor import FGOHeadersProcessor
 init_audit_system()
 
 
