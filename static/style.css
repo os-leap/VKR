@@ -843,3 +843,19 @@ li {
 .btn-close-preview:hover {
     background-color: #545b62;
 }
+
+/* Стили для кнопки просмотра PDF */
+.btn-view-pdf {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #17a2b8;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-view-pdf:hover {
+    background-color: #138496;
+}
