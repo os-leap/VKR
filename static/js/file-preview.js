@@ -77,6 +77,16 @@ function getFilePreviewElement(filename, filetype, filepath) {
         `;
     }
     
+    // For video formats, show video player
+    if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(extension)) {
+        return `
+            <video controls width="100%" style="max-height: 70vh;">
+                <source src="${filepath}" type="video/${extension}">
+                Ваш браузер не поддерживает видео тег.
+            </video>
+        `;
+    }
+    
     // For unsupported formats, just show download button
     return `
         <div class="file-info">

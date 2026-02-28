@@ -38,7 +38,7 @@ USERS_FILE = "users.json"
 DATA_FILE = "knowledge_base.json"
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-ALLOWED_EXTENSIONS = {"pdf", "docx", "txt", "doc", "rtf"}
+ALLOWED_EXTENSIONS = {"pdf", "docx", "txt", "doc", "rtf", "mp4", "avi", "mov", "wmv", "flv", "webm"}
 
 filter_manager = FilterManager(DATA_FILE)
 advanced_filter_manager = AdvancedFilterManager(DATA_FILE, "filters.json")
