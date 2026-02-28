@@ -1113,8 +1113,8 @@ def search_entry_get():
                 continue
 
         # Используем синтаксически-осознанный поиск в заголовке, содержании и файлах
-        search_in_title = syntax_aware_search(entry["title"], query)
-        search_in_content = syntax_aware_search(entry["content"], query)
+        search_in_title = syntax_aware_search(entry.get("title", ""), query)
+        search_in_content = syntax_aware_search(entry.get("content", ""), query)
         
         # Поиск в файлах, если они есть
         search_in_files = False
