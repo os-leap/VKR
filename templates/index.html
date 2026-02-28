@@ -167,7 +167,7 @@
               </div>
             </div>
             <div class="entry-content">
-              <p>{{ entry.content[:200] }}{% if entry.content|length > 200 %}...{% endif %}</p>
+              <p>{{ entry.content[:200] if entry.content else '' }}{% if entry.content and entry.content|length > 200 %}...{% endif %}</p>
               {% if entry.file %}
                 <div class="entry-file">
                   <span>📎 Файл: </span>
