@@ -662,7 +662,8 @@ def index():
         filtered_data = filtered_temp
     
     # Сортируем записи по дате создания (новые сверху)
-    filtered_data.sort(key=lambda x: x['created_at'], reverse=True)
+    # Для pdf документов используем download_date вместо created_at
+    filtered_data.sort(key=lambda x: x.get('created_at', x.get('download_date', '')), reverse=True)
     
     # Получаем доступные фильтры
     available_filters = advanced_filter_manager.get_available_filters()
