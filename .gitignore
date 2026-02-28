@@ -1,1 +1,1 @@
-Nothing needs to be added to .gitignore since the only change is adding a single HTML file (`user_role_info.html`), which is a source file and not a build artifact, dependency, or temporary file.
+(empty)

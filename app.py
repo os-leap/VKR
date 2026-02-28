@@ -477,7 +477,18 @@ def load_data():
             
             # Инициализируем систему семантического поиска с новыми данными
             try:
-                initialize_search_system(data)
+                # Загружаем данные из pdf_documents.json для поиска
+                pdf_documents = []
+                try:
+                    with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+                        pdf_documents = json.load(f)
+                except FileNotFoundError:
+                    pdf_documents = []
+                except Exception as e:
+                    print(f"Ошибка при загрузке pdf_documents.json: {e}")
+                    pdf_documents = []
+                
+                initialize_search_system(data, pdf_documents)
             except Exception as e:
                 print(f"[ERROR] Не удалось инициализировать систему семантического поиска: {e}")
             
@@ -1155,6 +1166,19 @@ def search_entry_get():
     
     # Если синтаксический поиск не дал результатов, выполняем семантический поиск
     if not results:
+        # Загружаем данные из pdf_documents.json для семантического поиска
+        pdf_documents = []
+        try:
+            with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+                pdf_documents = json.load(f)
+        except FileNotFoundError:
+            pdf_documents = []
+        except Exception as e:
+            print(f"Ошибка при загрузке pdf_documents.json для семантического поиска: {e}")
+            pdf_documents = []
+        
+        # Инициализируем систему поиска с pdf документами для семантического поиска
+        initialize_search_system(data, pdf_documents)
         results = perform_integrated_search(query, search_type="semantic", top_k=20)
 
     # Получаем статистику по темам
