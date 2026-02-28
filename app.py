@@ -1198,7 +1198,25 @@ def search_entry_get():
         
         # Инициализируем систему поиска с pdf документами для семантического поиска
         initialize_search_system(data, pdf_documents)
-        results = perform_integrated_search(query, search_type="semantic", top_k=20)
+        semantic_results = perform_integrated_search(query, search_type="semantic", top_k=20)
+        
+        # Добавляем только те результаты из семантического поиска, которые содержат все необходимые поля
+        for result in semantic_results:
+            # Проверяем, что результат - это словарь с нужными полями
+            if isinstance(result, dict) and 'title' in result:
+                # Убеждаемся, что у результата есть поле content
+                if 'content' not in result:
+                    result['content'] = result.get('description', '')
+                # Убеждаемся, что у результата есть поле author
+                if 'author' not in result:
+                    result['author'] = 'system'
+                # Убеждаемся, что у результата есть поле updated_at
+                if 'updated_at' not in result:
+                    result['updated_at'] = datetime.now().isoformat()
+                # Убеждаемся, что у результата есть поле id
+                if 'id' not in result:
+                    result['id'] = str(uuid.uuid4())
+                results.append(result)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
