@@ -54,6 +54,16 @@ function getFilePreviewElement(filename, filetype, filepath) {
         `;
     }
     
+    // For video files, embed a video player
+    if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'].includes(extension)) {
+        return `
+            <video controls width="100%" style="max-height: 70vh;">
+                <source src="${filepath}" type="video/${extension}">
+                Ваш браузер не поддерживает воспроизведение видео. <a href="${filepath}" target="_blank">Нажмите здесь для скачивания</a>.
+            </video>
+        `;
+    }
+    
     // For text-based documents, try to show content preview
     if (['txt', 'md', 'csv'].includes(extension)) {
         // For these files we'll just show a download button since we can't preview server-side content easily
