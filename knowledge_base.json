@@ -167,5 +167,32 @@
             "parallel": "В",
             "subject": "Русский язык"
         }
+    },
+    {
+        "title": "проверка 7",
+        "content": "проверка 7",
+        "topic": "д/з",
+        "files": [
+            "Microsoft_Word.pdf"
+        ],
+        "author": "admin",
+        "created_at": "2026-02-27T15:40:11.603181",
+        "updated_at": "2026-02-27T15:40:11.603181",
+        "id": "db9b73c0-2ec6-4ac9-ae9e-7a0a8b9a5f26",
+        "education_info": {
+            "class": "1",
+            "parallel": "А",
+            "subject": "Биология"
+        }
+    },
+    {
+        "title": "aaaa",
+        "content": "aaaa",
+        "topic": "д/з",
+        "files": [],
+        "author": "user5",
+        "created_at": "2026-02-27T15:43:10.335831",
+        "updated_at": "2026-02-27T15:43:10.335831",
+        "id": "349a10eb-fa47-40ea-ad3d-da5dfc1569f2"
     }
 ]

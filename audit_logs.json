@@ -262,5 +262,111 @@
         "details": "Добавлена новая запись в теме 'д/з' с 1 файлами",
         "entry_id": null,
         "backup_id": null
+    },
+    {
+        "id": "1772187933.900893",
+        "timestamp": "2026-02-27T15:25:33.900893",
+        "username": "admin",
+        "action_type": "add",
+        "target": "погода",
+        "details": "Добавлена новая запись в теме 'контрольные' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772187946.397515",
+        "timestamp": "2026-02-27T15:25:46.397515",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "погода",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "id": "1772188690.983029",
+        "timestamp": "2026-02-27T15:38:10.983029",
+        "username": "admin",
+        "action_type": "add",
+        "target": "проверка 6",
+        "details": "Добавлена новая запись в теме 'другое' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772188753.459431",
+        "timestamp": "2026-02-27T15:39:13.459431",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "проверка 6",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "id": "1772188811.604191",
+        "timestamp": "2026-02-27T15:40:11.604191",
+        "username": "admin",
+        "action_type": "add",
+        "target": "проверка 7",
+        "details": "Добавлена новая запись в теме 'д/з' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772188841.109963",
+        "timestamp": "2026-02-27T15:40:41.109963",
+        "username": "admin",
+        "action_type": "add",
+        "target": "проверка 11",
+        "details": "Добавлена новая запись в теме 'д/з'",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772188866.259413",
+        "timestamp": "2026-02-27T15:41:06.259413",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "проверка 11",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "id": "1772188938.648405",
+        "timestamp": "2026-02-27T15:42:18.648405",
+        "username": "admin",
+        "action_type": "backup_restore",
+        "target": "backup_20260227_154131.zip",
+        "details": "Восстановление из резервной копии",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772188972.415025",
+        "timestamp": "2026-02-27T15:42:52.415025",
+        "username": "admin",
+        "action_type": "add_user",
+        "target": "user5",
+        "details": "Создан пользователь с ролью user",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772188990.336793",
+        "timestamp": "2026-02-27T15:43:10.336793",
+        "username": "user5",
+        "action_type": "add",
+        "target": "aaaa",
+        "details": "Добавлена новая запись в теме 'д/з'",
+        "entry_id": null,
+        "backup_id": null
     }
 ]
