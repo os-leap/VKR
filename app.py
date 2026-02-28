@@ -1284,12 +1284,23 @@ def search_entry_get():
     # Объединяем результаты: сначала синтаксические, затем семантические по релевантности
     prioritized_results = syntax_results + semantic_only_results
 
+    # Загружаем документы из pdf_documents.json для отображения
+    pdf_documents_display = []
+    try:
+        with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+            pdf_documents_display = json.load(f)
+    except FileNotFoundError:
+        pdf_documents_display = []
+    except Exception as e:
+        print(f"Ошибка при загрузке pdf_documents.json для отображения: {e}")
+        pdf_documents_display = []
+
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
 
     return render_template("index.html", entries=prioritized_results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
-                           search_query=query, topic_stats=topic_stats)
+                           search_query=query, topic_stats=topic_stats, pdf_documents=pdf_documents_display)
 
 
 def extract_filters_from_query(query):
