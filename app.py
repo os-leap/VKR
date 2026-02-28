@@ -1067,6 +1067,34 @@ def uploaded_file(filename):
         return f"Произошла ошибка: {e}", 500
 
 
+@app.route("/preview/<filename>")
+def preview_file(filename):
+    """Маршрут для предварительного просмотра файлов"""
+    from werkzeug.utils import secure_filename
+    safe_filename = secure_filename(filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_filename)
+    
+    # Проверяем тип файла для определения способа отображения
+    _, ext = os.path.splitext(safe_filename)
+    ext = ext.lower()
+    
+    if ext in ['.pdf']:
+        file_type = 'pdf'
+    elif ext in ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']:
+        file_type = 'video'
+    elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']:
+        file_type = 'image'
+    else:
+        return "Неподдерживаемый тип файла для предварительного просмотра", 400
+    
+    try:
+        if not os.path.isfile(file_path):
+            return "Файл не найден", 404
+        return render_template("preview.html", filename=filename, file_type=file_type)
+    except Exception as e:
+        return f"Произошла ошибка: {e}", 500
+
+
 @app.route("/search", methods=["POST"])
 def search_entry():
     query = request.form.get("query", "").strip()
