@@ -1149,10 +1149,29 @@ def search_entry_get():
         try:
             with open('pdf_documents.json', 'r', encoding='utf-8') as f:
                 pdf_documents = json.load(f)
-            
+
             for doc in pdf_documents:
-                doc_text = f"{doc.get('title', '')} {doc.get('filename', '')} {doc.get('extracted_title', '')}".lower()
-                if syntax_aware_search(doc_text, query):
+                # Поиск по заголовку
+                title = doc.get('title', '')
+                if syntax_aware_search(title, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по заголовку, ищем по имени файла
+                filename = doc.get('filename', '')
+                if syntax_aware_search(filename, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по имени файла, ищем по извлеченному заголовку
+                extracted_title = doc.get('extracted_title', '')
+                if syntax_aware_search(extracted_title, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по извлеченному заголовку, ищем по URL
+                url = doc.get('url', '')
+                if syntax_aware_search(url, query):
                     search_in_pdf_docs = True
                     break
         except FileNotFoundError:
