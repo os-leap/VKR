@@ -1,1 +1,29 @@
-Nothing needs to be added to .gitignore since the only change is adding a single HTML file (`user_role_info.html`), which is a source file and not a build artifact, dependency, or temporary file.
+# Examples 1:
+# Project with source files only - no build artifacts, dependencies, or temp files
+# Output: (empty - nothing should be ignored)
+
+# Example 2:
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+dist/
+build/
+# Dependencies
+.venv/
+venv/
+node_modules/
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+# Environment
+.env
+.env.local
+.env.*
+# Editors
+.vscode/
+.idea/
+# Original rules preserved
+*.log

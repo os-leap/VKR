@@ -368,5 +368,27 @@
         "details": "Добавлена новая запись в теме 'д/з'",
         "entry_id": null,
         "backup_id": null
+    },
+    {
+        "id": "1772292625.586634",
+        "timestamp": "2026-02-28T20:30:25.586640",
+        "username": "admin",
+        "action_type": "add",
+        "target": "dddd",
+        "details": "Добавлена новая запись в теме 'д/з' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772292634.046122",
+        "timestamp": "2026-02-28T20:30:34.046127",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "dddd",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
     }
 ]

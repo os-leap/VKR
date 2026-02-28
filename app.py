@@ -38,7 +38,7 @@ USERS_FILE = "users.json"
 DATA_FILE = "knowledge_base.json"
 app.config["UPLOAD_FOLDER"] = "static/uploads"
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-ALLOWED_EXTENSIONS = {"pdf", "docx", "txt", "doc", "rtf"}
+ALLOWED_EXTENSIONS = {"pdf", "docx", "txt", "doc", "rtf", "mp4"}
 
 filter_manager = FilterManager(DATA_FILE)
 advanced_filter_manager = AdvancedFilterManager(DATA_FILE, "filters.json")
@@ -477,7 +477,18 @@ def load_data():
             
             # Инициализируем систему семантического поиска с новыми данными
             try:
-                initialize_search_system(data)
+                # Загружаем данные из pdf_documents.json для поиска
+                pdf_documents = []
+                try:
+                    with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+                        pdf_documents = json.load(f)
+                except FileNotFoundError:
+                    pdf_documents = []
+                except Exception as e:
+                    print(f"Ошибка при загрузке pdf_documents.json: {e}")
+                    pdf_documents = []
+                
+                initialize_search_system(data, pdf_documents)
             except Exception as e:
                 print(f"[ERROR] Не удалось инициализировать систему семантического поиска: {e}")
             
@@ -651,7 +662,8 @@ def index():
         filtered_data = filtered_temp
     
     # Сортируем записи по дате создания (новые сверху)
-    filtered_data.sort(key=lambda x: x['created_at'], reverse=True)
+    # Для pdf документов используем download_date вместо created_at
+    filtered_data.sort(key=lambda x: x.get('created_at', x.get('download_date', '')), reverse=True)
     
     # Получаем доступные фильтры
     available_filters = advanced_filter_manager.get_available_filters()
@@ -1055,6 +1067,34 @@ def uploaded_file(filename):
         return f"Произошла ошибка: {e}", 500
 
 
+@app.route("/preview/<filename>")
+def preview_file(filename):
+    """Маршрут для предварительного просмотра файлов"""
+    from werkzeug.utils import secure_filename
+    safe_filename = secure_filename(filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_filename)
+    
+    # Проверяем тип файла для определения способа отображения
+    _, ext = os.path.splitext(safe_filename)
+    ext = ext.lower()
+    
+    if ext in ['.pdf']:
+        file_type = 'pdf'
+    elif ext in ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']:
+        file_type = 'video'
+    elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']:
+        file_type = 'image'
+    else:
+        return "Неподдерживаемый тип файла для предварительного просмотра", 400
+    
+    try:
+        if not os.path.isfile(file_path):
+            return "Файл не найден", 404
+        return render_template("preview.html", filename=filename, file_type=file_type)
+    except Exception as e:
+        return f"Произошла ошибка: {e}", 500
+
+
 @app.route("/search", methods=["POST"])
 def search_entry():
     query = request.form.get("query", "").strip()
@@ -1102,8 +1142,8 @@ def search_entry_get():
                 continue
 
         # Используем синтаксически-осознанный поиск в заголовке, содержании и файлах
-        search_in_title = syntax_aware_search(entry["title"], query)
-        search_in_content = syntax_aware_search(entry["content"], query)
+        search_in_title = syntax_aware_search(entry.get("title", ""), query)
+        search_in_content = syntax_aware_search(entry.get("content", ""), query)
         
         # Поиск в файлах, если они есть
         search_in_files = False
@@ -1138,10 +1178,29 @@ def search_entry_get():
         try:
             with open('pdf_documents.json', 'r', encoding='utf-8') as f:
                 pdf_documents = json.load(f)
-            
+
             for doc in pdf_documents:
-                doc_text = f"{doc.get('title', '')} {doc.get('filename', '')} {doc.get('extracted_title', '')}".lower()
-                if syntax_aware_search(doc_text, query):
+                # Поиск по заголовку
+                title = doc.get('title', '')
+                if syntax_aware_search(title, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по заголовку, ищем по имени файла
+                filename = doc.get('filename', '')
+                if syntax_aware_search(filename, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по имени файла, ищем по извлеченному заголовку
+                extracted_title = doc.get('extracted_title', '')
+                if syntax_aware_search(extracted_title, query):
+                    search_in_pdf_docs = True
+                    break
+                
+                # Если не нашли по извлеченному заголовку, ищем по URL
+                url = doc.get('url', '')
+                if syntax_aware_search(url, query):
                     search_in_pdf_docs = True
                     break
         except FileNotFoundError:
@@ -1153,14 +1212,82 @@ def search_entry_get():
         if search_in_title or search_in_content or search_in_files or search_in_fgoss or search_in_pdf_docs:
             results.append(entry)
     
-    # Если синтаксический поиск не дал результатов, выполняем семантический поиск
-    if not results:
-        results = perform_integrated_search(query, search_type="semantic", top_k=20)
+    # Всегда выполняем семантический поиск и сортируем результаты по релевантности
+    # Загружаем данные из pdf_documents.json для семантического поиска
+    pdf_documents = []
+    try:
+        with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+            pdf_documents = json.load(f)
+    except FileNotFoundError:
+        pdf_documents = []
+    except Exception as e:
+        print(f"Ошибка при загрузке pdf_documents.json для семантического поиска: {e}")
+        pdf_documents = []
+    
+    # Инициализируем систему поиска с pdf документами для семантического поиска
+    initialize_search_system(data, pdf_documents)
+    semantic_results = perform_integrated_search(query, search_type="semantic", top_k=20)
+    
+    # Создаем множество ID синтаксических результатов для избежания дубликатов
+    syntax_result_ids = set()
+    for result in results:
+        if 'id' in result:
+            syntax_result_ids.add(result['id'])
+    
+    # Добавляем семантические результаты, если их еще нет в синтаксических
+    for result in semantic_results:
+        # Проверяем, что результат - это словарь с нужными полями
+        if isinstance(result, dict) and 'title' in result:
+            # Убеждаемся, что у результата есть поле content
+            if 'content' not in result:
+                result['content'] = result.get('description', '')
+            # Убеждаемся, что у результата есть поле author
+            if 'author' not in result:
+                result['author'] = 'system'
+            # Убеждаемся, что у результата есть поле updated_at
+            if 'updated_at' not in result:
+                result['updated_at'] = datetime.now().isoformat()
+            # Убеждаемся, что у результата есть поле id
+            if 'id' not in result:
+                result['id'] = str(uuid.uuid4())
+            
+            # Добавляем результат только если его нет среди синтаксических результатов
+            if 'id' not in result or result['id'] not in syntax_result_ids:
+                results.append(result)
+
+    # Сортируем результаты по релевантности (сначала синтаксические, потом семантические по убыванию оценки)
+    # Для этого создаем новую версию списка с приоритетами
+    prioritized_results = []
+    
+    # Определяем синтаксические и семантические результаты
+    syntax_results = []
+    semantic_only_results = []
+    
+    # Сначала определяем, какие результаты были найдены через синтаксический поиск
+    # (это будут те, что уже находятся в списке results до добавления семантических)
+    original_syntax_count = len(results) - len(semantic_results) if len(results) >= len(semantic_results) else len(results)
+    
+    # Добавляем синтаксические результаты (они более точные)
+    for i, result in enumerate(results):
+        if i < original_syntax_count:
+            # Это синтаксический результат
+            result['_priority'] = 1  # Высокий приоритет для синтаксических результатов
+            syntax_results.append(result)
+        else:
+            # Это семантический результат, который был добавлен позже
+            result['_priority'] = 2  # Низкий приоритет для семантических результатов
+            semantic_only_results.append(result)
+    
+    # Сортируем семантические результаты по relevance_score (если есть) в порядке убывания
+    semantic_only_results.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
+    
+    # Объединяем результаты: сначала синтаксические, затем семантические по релевантности
+    prioritized_results = syntax_results + semantic_only_results
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
 
-    return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
+    return render_template("index.html", entries=prioritized_results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
                            search_query=query, topic_stats=topic_stats)
 

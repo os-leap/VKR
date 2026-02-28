@@ -36,21 +36,38 @@ class SimpleIntegratedSearchSystem:
         text = ' '.join(text.split())
         return text
         
-    def load_documents(self, data: List[dict]):
+    def load_documents(self, data: List[dict], pdf_documents: List[dict] = None):
         """
         Загрузка документов из базы знаний для семантического поиска
         
         Args:
             data: список документов из базы знаний
+            pdf_documents: список документов из pdf_documents.json
         """
         self.data = data
         # Подготовка документов для семантического поиска
         # Объединяем заголовок и содержание для лучшего понимания контекста
         semantic_docs = []
+        
+        # Добавляем документы из основной базы знаний
         for entry in data:
             combined_text = f"{entry.get('title', '')} {entry.get('content', '')}"
             processed_text = self.simple_preprocess(combined_text.strip())
             semantic_docs.append(processed_text)
+        
+        # Добавляем документы из pdf_documents.json, если они переданы
+        if pdf_documents:
+            for doc in pdf_documents:
+                combined_text = f"{doc.get('title', '')} {doc.get('filename', '')} {doc.get('extracted_title', '')} {doc.get('url', '')}"
+                processed_text = self.simple_preprocess(combined_text.strip())
+                semantic_docs.append(processed_text)
+            # Также добавляем PDF документы в self.data для правильного получения по индексу
+            original_len = len(data)
+            for i, doc in enumerate(pdf_documents):
+                # Добавляем специальный формат для PDF документов
+                pdf_doc = doc.copy()
+                pdf_doc['__source__'] = 'pdf_documents'
+                self.data.append(pdf_doc)
         
         self.documents = semantic_docs
         
@@ -107,14 +124,15 @@ class SimpleIntegratedSearchSystem:
 search_system = SimpleIntegratedSearchSystem()
 
 
-def initialize_search_system(data: List[dict]):
+def initialize_search_system(data: List[dict], pdf_documents: List[dict] = None):
     """
     Инициализация системы поиска с данными
     
     Args:
         data: список документов из базы знаний
+        pdf_documents: список документов из pdf_documents.json
     """
-    search_system.load_documents(data)
+    search_system.load_documents(data, pdf_documents)
 
 
 def perform_integrated_search(query: str, search_type: str = "semantic", top_k: int = 10) -> List[dict]:
