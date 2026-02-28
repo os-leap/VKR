@@ -1,1 +1,1 @@
-(refined_search_system.py is a source file, so no need to add anything to .gitignore)
+Nothing should be ignored since only a Python source file (`fixed_search_system.py`) was added without any build artifacts, dependencies, or temporary files.
