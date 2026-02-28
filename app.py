@@ -1183,45 +1183,75 @@ def search_entry_get():
         if search_in_title or search_in_content or search_in_files or search_in_fgoss or search_in_pdf_docs:
             results.append(entry)
     
-    # Если синтаксический поиск не дал результатов, выполняем семантический поиск
-    if not results:
-        # Загружаем данные из pdf_documents.json для семантического поиска
+    # Всегда выполняем семантический поиск и сортируем результаты по релевантности
+    # Загружаем данные из pdf_documents.json для семантического поиска
+    pdf_documents = []
+    try:
+        with open('pdf_documents.json', 'r', encoding='utf-8') as f:
+            pdf_documents = json.load(f)
+    except FileNotFoundError:
         pdf_documents = []
-        try:
-            with open('pdf_documents.json', 'r', encoding='utf-8') as f:
-                pdf_documents = json.load(f)
-        except FileNotFoundError:
-            pdf_documents = []
-        except Exception as e:
-            print(f"Ошибка при загрузке pdf_documents.json для семантического поиска: {e}")
-            pdf_documents = []
-        
-        # Инициализируем систему поиска с pdf документами для семантического поиска
-        initialize_search_system(data, pdf_documents)
-        semantic_results = perform_integrated_search(query, search_type="semantic", top_k=20)
-        
-        # Добавляем только те результаты из семантического поиска, которые содержат все необходимые поля
-        for result in semantic_results:
-            # Проверяем, что результат - это словарь с нужными полями
-            if isinstance(result, dict) and 'title' in result:
-                # Убеждаемся, что у результата есть поле content
-                if 'content' not in result:
-                    result['content'] = result.get('description', '')
-                # Убеждаемся, что у результата есть поле author
-                if 'author' not in result:
-                    result['author'] = 'system'
-                # Убеждаемся, что у результата есть поле updated_at
-                if 'updated_at' not in result:
-                    result['updated_at'] = datetime.now().isoformat()
-                # Убеждаемся, что у результата есть поле id
-                if 'id' not in result:
-                    result['id'] = str(uuid.uuid4())
+    except Exception as e:
+        print(f"Ошибка при загрузке pdf_documents.json для семантического поиска: {e}")
+        pdf_documents = []
+    
+    # Инициализируем систему поиска с pdf документами для семантического поиска
+    initialize_search_system(data, pdf_documents)
+    semantic_results = perform_integrated_search(query, search_type="semantic", top_k=20)
+    
+    # Создаем множество ID синтаксических результатов для избежания дубликатов
+    syntax_result_ids = set()
+    for result in results:
+        if 'id' in result:
+            syntax_result_ids.add(result['id'])
+    
+    # Добавляем семантические результаты, если их еще нет в синтаксических
+    for result in semantic_results:
+        # Проверяем, что результат - это словарь с нужными полями
+        if isinstance(result, dict) and 'title' in result:
+            # Убеждаемся, что у результата есть поле content
+            if 'content' not in result:
+                result['content'] = result.get('description', '')
+            # Убеждаемся, что у результата есть поле author
+            if 'author' not in result:
+                result['author'] = 'system'
+            # Убеждаемся, что у результата есть поле updated_at
+            if 'updated_at' not in result:
+                result['updated_at'] = datetime.now().isoformat()
+            # Убеждаемся, что у результата есть поле id
+            if 'id' not in result:
+                result['id'] = str(uuid.uuid4())
+            
+            # Добавляем результат только если его нет среди синтаксических результатов
+            if 'id' not in result or result['id'] not in syntax_result_ids:
                 results.append(result)
+
+    # Сортируем результаты по релевантности (сначала синтаксические, потом семантические по убыванию оценки)
+    # Для этого создаем новую версию списка с приоритетами
+    prioritized_results = []
+    
+    # Разделяем синтаксические и семантические результаты
+    syntax_results = results[:len(results)-len(semantic_results)] if len(results) >= len(semantic_results) else results
+    semantic_only_results = []
+    
+    # Добавляем синтаксические результаты (они более точные)
+    for result in syntax_results:
+        result['_priority'] = 1  # Высокий приоритет для синтаксических результатов
+        prioritized_results.append(result)
+    
+    # Выбираем семантические результаты (те, что не являются синтаксическими)
+    for result in results[len(syntax_results):]:
+        if '_priority' not in result:  # Это семантические результаты
+            semantic_only_results.append(result)
+    
+    # Сортируем семантические результаты по relevance_score (если есть) в порядке убывания
+    semantic_only_results.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
+    prioritized_results.extend(semantic_only_results)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
 
-    return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
+    return render_template("index.html", entries=prioritized_results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
                            search_query=query, topic_stats=topic_stats)
 
