@@ -1230,23 +1230,30 @@ def search_entry_get():
     # Для этого создаем новую версию списка с приоритетами
     prioritized_results = []
     
-    # Разделяем синтаксические и семантические результаты
-    syntax_results = results[:len(results)-len(semantic_results)] if len(results) >= len(semantic_results) else results
+    # Определяем синтаксические и семантические результаты
+    syntax_results = []
     semantic_only_results = []
     
-    # Добавляем синтаксические результаты (они более точные)
-    for result in syntax_results:
-        result['_priority'] = 1  # Высокий приоритет для синтаксических результатов
-        prioritized_results.append(result)
+    # Сначала определяем, какие результаты были найдены через синтаксический поиск
+    # (это будут те, что уже находятся в списке results до добавления семантических)
+    original_syntax_count = len(results) - len(semantic_results) if len(results) >= len(semantic_results) else len(results)
     
-    # Выбираем семантические результаты (те, что не являются синтаксическими)
-    for result in results[len(syntax_results):]:
-        if '_priority' not in result:  # Это семантические результаты
+    # Добавляем синтаксические результаты (они более точные)
+    for i, result in enumerate(results):
+        if i < original_syntax_count:
+            # Это синтаксический результат
+            result['_priority'] = 1  # Высокий приоритет для синтаксических результатов
+            syntax_results.append(result)
+        else:
+            # Это семантический результат, который был добавлен позже
+            result['_priority'] = 2  # Низкий приоритет для семантических результатов
             semantic_only_results.append(result)
     
     # Сортируем семантические результаты по relevance_score (если есть) в порядке убывания
     semantic_only_results.sort(key=lambda x: x.get('relevance_score', 0), reverse=True)
-    prioritized_results.extend(semantic_only_results)
+    
+    # Объединяем результаты: сначала синтаксические, затем семантические по релевантности
+    prioritized_results = syntax_results + semantic_only_results
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
