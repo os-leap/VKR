@@ -11,6 +11,83 @@ class Material:
         return f"Material(title='{self.title}', grade={self.grade}, subject='{self.subject}', tags={self.tags})"
 
 
+class PDFDocumentSearch:
+    """Система поиска по документам из файла pdf_documents.json"""
+    
+    def __init__(self, pdf_documents_file="pdf_documents.json"):
+        self.pdf_documents_file = pdf_documents_file
+        self.documents = []
+        self.load_documents()
+    
+    def load_documents(self):
+        """Загрузка документов из JSON-файла"""
+        try:
+            with open(self.pdf_documents_file, 'r', encoding='utf-8') as f:
+                self.documents = json.load(f)
+            print(f"Загружено {len(self.documents)} PDF-документов из {self.pdf_documents_file}")
+        except FileNotFoundError:
+            print(f"Файл {self.pdf_documents_file} не найден")
+            self.documents = []
+        except json.JSONDecodeError:
+            print(f"Ошибка чтения JSON из файла {self.pdf_documents_file}")
+            self.documents = []
+    
+    def search(self, query):
+        """
+        Поиск документов по запросу
+        Поиск производится по следующим полям: title, filename, extracted_title
+        """
+        if not query:
+            return self.documents
+        
+        query_lower = query.lower().strip()
+        results = []
+        
+        for doc in self.documents:
+            # Проверяем совпадения в различных полях документа
+            match_fields = []
+            
+            # Проверяем заголовки
+            if 'title' in doc and query_lower in doc['title'].lower():
+                match_fields.append('title')
+                
+            if 'extracted_title' in doc and doc['extracted_title'] and query_lower in doc['extracted_title'].lower():
+                match_fields.append('extracted_title')
+                
+            if 'filename' in doc and query_lower in doc['filename'].lower():
+                match_fields.append('filename')
+            
+            # Если есть совпадения, добавляем документ в результаты
+            if match_fields:
+                doc_copy = doc.copy()
+                doc_copy['match_fields'] = match_fields
+                results.append(doc_copy)
+        
+        return results
+    
+    def advanced_search(self, query, filters=None):
+        """
+        Расширенный поиск с возможностью фильтрации
+        filters: словарь с фильтрами {'field': 'value'}
+        """
+        results = self.search(query)
+        
+        if filters:
+            filtered_results = []
+            for doc in results:
+                match = True
+                for field, value in filters.items():
+                    if field in doc:
+                        if str(value).lower() not in str(doc[field]).lower():
+                            match = False
+                            break
+                if match:
+                    filtered_results.append(doc)
+            results = filtered_results
+        
+        return results
+
+
 class SearchSystem:
     """Система поиска учебных материалов"""
     
