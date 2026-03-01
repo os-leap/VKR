@@ -1,3 +1,31 @@
-(search_system.py is a source file, so no additional ignores are needed beyond what might already exist)
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# No additional ignores needed for source file modifications only
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+
+# Build artifacts
+dist/
+build/
+target/
+```

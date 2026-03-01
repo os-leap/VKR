@@ -24,6 +24,60 @@ class PDFDocumentSearch:
             print(f"Ошибка чтения JSON из файла {self.pdf_documents_file}")
             self.documents = []
     
+    def levenshtein_distance(self, s1, s2):
+        """Вычисляет расстояние Левенштейна между двумя строками"""
+        if len(s1) < len(s2):
+            return self.levenshtein_distance(s2, s1)
+
+        if len(s2) == 0:
+            return len(s1)
+
+        previous_row = list(range(len(s2) + 1))
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+
+        return previous_row[-1]
+    
+    def fuzzy_match(self, text, query, threshold=0.6):
+        """Проверяет, соответствует ли текст запросу с учетом возможных опечаток"""
+        if not text:
+            return False
+            
+        text_lower = text.lower()
+        query_lower = query.lower()
+        
+        # Сначала проверяем обычное вхождение
+        if query_lower in text_lower:
+            return True
+            
+        # Затем проверяем с использованием расстояния Левенштейна
+        words_in_text = text_lower.split()
+        query_words = query_lower.split()
+        
+        matched_words = 0
+        total_query_words = len(query_words)
+        
+        for query_word in query_words:
+            word_matched = False
+            for text_word in words_in_text:
+                distance = self.levenshtein_distance(query_word, text_word)
+                similarity = 1 - (distance / max(len(query_word), len(text_word)))
+                
+                if similarity >= threshold:
+                    word_matched = True
+                    break
+                    
+            if word_matched:
+                matched_words += 1
+                
+        return matched_words / total_query_words >= 0.5  # Хотя бы половина слов должны совпасть
+    
     def search(self, query):
         """
         Поиск документов по запросу
@@ -40,13 +94,13 @@ class PDFDocumentSearch:
             match_fields = []
             
             # Проверяем заголовки
-            if 'title' in doc and query_lower in doc['title'].lower():
+            if 'title' in doc and self.fuzzy_match(doc['title'], query_lower):
                 match_fields.append('title')
                 
-            if 'extracted_title' in doc and doc['extracted_title'] and query_lower in doc['extracted_title'].lower():
+            if 'extracted_title' in doc and doc['extracted_title'] and self.fuzzy_match(doc['extracted_title'], query_lower):
                 match_fields.append('extracted_title')
                 
-            if 'filename' in doc and query_lower in doc['filename'].lower():
+            if 'filename' in doc and self.fuzzy_match(doc['filename'], query_lower):
                 match_fields.append('filename')
             
             # Если есть совпадения, добавляем документ в результаты
