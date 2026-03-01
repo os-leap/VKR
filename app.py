@@ -930,7 +930,7 @@ def edit_entry(id):
     entry_author = entry.get("author", "system")
 
     # Проверка прав доступа
-    if entry_author != session["user"]["username"] and session["user"]["role"] != "admin":
+    if entry_author != session["user"]["username"] and session["user"]["role"] != "admin" and session["user"]["role"] != "editor":
         return "Доступ запрещён", 403
 
     if request.method == "POST":
@@ -1014,7 +1014,7 @@ def delete_entry(id):
     if entry is None:
         return "Запись не найдена", 404
 
-    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin":
+    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin" and session["user"]["role"] != "editor":
         return "Доступ запрещён", 403
     log_action(
         username=session["user"]["username"],
@@ -1366,7 +1366,7 @@ def edit_entry_by_id(entry_id):
     entry_author = entry.get("author", "system")
 
     # Проверка прав доступа
-    if entry_author != session["user"]["username"] and session["user"]["role"] != "admin":
+    if entry_author != session["user"]["username"] and session["user"]["role"] != "admin" and session["user"]["role"] != "editor":
         return "Доступ запрещён", 403
 
     if request.method == "POST":
@@ -1448,7 +1448,7 @@ def delete_entry_by_id(entry_id):
         return "Запись не найдена", 404
 
     entry = data[entry_index]
-    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin":
+    if entry["author"] != session["user"]["username"] and session["user"]["role"] != "admin" and session["user"]["role"] != "editor":
         return "Доступ запрещён", 403
         
     log_action(
