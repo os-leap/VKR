@@ -1,1 +1,53 @@
-Nothing should be ignored based on the provided file changes. The only modified file is `templates/index.html`, which is a source code file and should not be added to .gitignore. There are no build artifacts, dependencies, or temporary files in the changes that require ignoring.
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.venv.bak/
+pip-log.txt
+pip-selfcheck.json
+.python-version
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+
+# Build artifacts
+build/
+dist/
+*.egg
+*.egg-info/
+*.so
+.libs/
+
+# Environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Icon?
+```
+
+Wait, let me reconsider. The added files are only `regulatory_doc_search.py` (Python source) and `regulatory_documents.json` (JSON config/data). These are both source/config files without any build artifacts, dependencies, or temporary files in the changes.
+
+```
+
+```
