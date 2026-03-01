@@ -1140,7 +1140,19 @@ def search_entry_get():
                 pdf_documents = json.load(f)
             
             for doc in pdf_documents:
-                doc_text = f"{doc.get('title', '')} {doc.get('filename', '')} {doc.get('extracted_title', '')}".lower()
+                # Проверяем точное совпадение заголовка перед синтаксическим поиском
+                doc_title = doc.get('title', '').lower()
+                doc_filename = doc.get('filename', '').lower()
+                doc_extracted_title = doc.get('extracted_title', '').lower()
+                
+                # Если запрос полностью содержится в заголовке документа, считаем это совпадением
+                query_lower = query.lower()
+                if query_lower in doc_title or query_lower in doc_filename or query_lower in doc_extracted_title:
+                    search_in_pdf_docs = True
+                    break
+                
+                # Также проверяем через синтаксический поиск
+                doc_text = f"{doc_title} {doc_filename} {doc_extracted_title}"
                 if syntax_aware_search(doc_text, query):
                     search_in_pdf_docs = True
                     break
