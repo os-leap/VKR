@@ -1,53 +1,39 @@
 ```
-# Python
-__pycache__/
+# Compiled Python files
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
+__pycache__/
+
+# Dependencies
 .venv/
-.ENV
-.venv.bak/
+venv/
 pip-log.txt
-pip-selfcheck.json
-.python-version
-.pytest_cache/
-.mypy_cache/
-.coverage
-coverage/
+pip-delete-this-directory.txt
 
-# Build artifacts
-build/
-dist/
-*.egg
-*.egg-info/
-*.so
-.libs/
-
-# Environment
+# Environment variables
 .env
 .env.local
-.env.*
-!.env.example
+*.env.*
 
 # Logs
 *.log
 
-# OS generated files
+# Coverage reports
+.coverage
+coverage/
+htmlcov/
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-Icon?
-```
 
-Wait, let me reconsider. The added files are only `regulatory_doc_search.py` (Python source) and `regulatory_documents.json` (JSON config/data). These are both source/config files without any build artifacts, dependencies, or temporary files in the changes.
-
-```
-
+# Build and distribution artifacts
+build/
+dist/
+*.egg-info/
 ```
