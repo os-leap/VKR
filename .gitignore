@@ -1,57 +1,48 @@
 ```gitignore
-# Python
+# Compiled Python files
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Environment
-.venv/
+# Virtual environments
 venv/
+.venv/
 env/
-ENV/
 
-# IDE
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# IDE specific
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Logs
-*.log
+# Build artifacts
+dist/
+build/
+target/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Coverage
+# Dependencies cache
+node_modules/
+.npm/
+.yarn/
+.pip/
+.mypy_cache/
+.pytest_cache/
 .coverage
 coverage/
 htmlcov/
 
-# Testing
-.pytest_cache/
-.mypy_cache/
+# OS generated
+.DS_Store
+Thumbs.db
 
-# Local configuration
-.env
-.env.local
-*.env.*
-!app.py
+# Temporary files
+*.tmp
+*.temp
 ```

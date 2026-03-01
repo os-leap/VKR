@@ -1079,6 +1079,7 @@ def search_entry_get():
     data = load_data()
 
     results = []
+    pdf_docs_results = []
     
     # Извлекаем параметры фильтрации из поискового запроса
     extracted_class, extracted_subject = extract_filters_from_query(query)
