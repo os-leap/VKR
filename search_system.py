@@ -1,3 +1,8 @@
+import json
+import re
+from datetime import datetime
+
+
 class Material:
     """Класс для представления учебного материала"""
     def __init__(self, title, description, grade, subject, tags=None):
@@ -147,8 +152,7 @@ class SearchSystem:
         return results
 
 
-# Пример использования
-if __name__ == "__main__":
+def main():
     # Создаем систему поиска
     search_system = SearchSystem()
     
@@ -185,6 +189,9 @@ if __name__ == "__main__":
         ["8 класс", "математика", "повторение"]  # обратите внимание: тег указывает на 8 класс, но материал для 9 класса
     ))
     
+    # Создаем систему поиска по PDF документам
+    pdf_search = PDFDocumentSearch()
+    
     # Тестирование поиска
     print("Поиск материалов для 8 класса по алгебре:")
     results = search_system.search_with_tags(grade=8, subject="алгебра")
@@ -205,3 +212,34 @@ if __name__ == "__main__":
     results = search_system.search_with_tags()
     for result in results:
         print(f"  - {result}")
+    
+    # Интерактивный поиск по PDF документам
+    print("\n=== Поиск по PDF документам ===")
+    while True:
+        query = input("\nВведите поисковый запрос (или 'exit' для выхода): ").strip()
+
+        if query.lower() == 'exit':
+            break
+
+        if not query:
+            continue
+
+        results = pdf_search.search(query)
+
+        print(f"\nНайдено {len(results)} документов по запросу '{query}':")
+
+        for i, doc in enumerate(results, 1):
+            print(f"\n{i}. ID: {doc.get('id', 'N/A')}")
+            print(f"   Заголовок: {doc.get('title', 'N/A')}")
+            print(f"   Имя файла: {doc.get('filename', 'N/A')}")
+            print(f"   Извлеченный заголовок: {doc.get('extracted_title', 'N/A')}")
+            print(f"   URL: {doc.get('url', 'N/A')}")
+            print(f"   Дата скачивания: {doc.get('download_date', 'N/A')}")
+            print(f"   Совпадения в полях: {doc.get('match_fields', [])}")
+
+        if not results:
+            print("\nДокументы не найдены.")
+
+
+if __name__ == "__main__":
+    main()

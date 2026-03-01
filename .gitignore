@@ -1,1 +1,3 @@
-(pdf_search_system.py and search_system.py are both source code files, and there are no build artifacts, dependencies, or temporary files in the changes)
+(search_system.py is a source file, so no additional ignores are needed beyond what might already exist)
+
+# No additional ignores needed for source file modifications only
