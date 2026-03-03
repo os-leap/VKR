@@ -908,8 +908,19 @@ def view_entry(id):
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
     try:
-        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
-        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+        # Найти материал по оригинальному ID из базы данных
+        target_material = None
+        for material in enhanced_search_system.materials:
+            if material.original_id == entry.get("id"):
+                target_material = material
+                break
+        
+        if target_material:
+            similar_materials = enhanced_search_system.find_similar_materials(target_material.id, limit=5)
+        else:
+            # Если не найден, используем старую логику
+            material_id = int(hash(entry.get("title", "") + str(entry.get("education_info", {}).get("class", "")) + entry.get("subject", "общее")) % 10000)
+            similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
     except Exception as e:
         print(f"Error finding similar materials: {e}")
         similar_materials = []
@@ -1366,8 +1377,19 @@ def view_entry_by_id(entry_id):
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
     try:
-        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
-        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+        # Найти материал по оригинальному ID из базы данных
+        target_material = None
+        for material in enhanced_search_system.materials:
+            if material.original_id == entry.get("id"):
+                target_material = material
+                break
+        
+        if target_material:
+            similar_materials = enhanced_search_system.find_similar_materials(target_material.id, limit=5)
+        else:
+            # Если не найден, используем старую логику
+            material_id = int(hash(entry.get("title", "") + str(entry.get("education_info", {}).get("class", "")) + entry.get("subject", "общее")) % 10000)
+            similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
     except Exception as e:
         print(f"Error finding similar materials: {e}")
         similar_materials = []
