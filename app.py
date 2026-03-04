@@ -1054,12 +1054,18 @@ logging.basicConfig(level=logging.DEBUG)
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     from werkzeug.utils import secure_filename
+    from flask import send_file
     safe_filename = secure_filename(filename)
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_filename)
     try:
         if not os.path.isfile(file_path):
             return "Файл не найден", 404
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+        
+        # For PDF files, set headers to allow inline viewing in browser
+        if filename.lower().endswith('.pdf'):
+            return send_file(file_path, mimetype='application/pdf', as_attachment=False)
+        else:
+            return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
     except FileNotFoundError:
         return "Файл не найден", 404
     except Exception as e:
