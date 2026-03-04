@@ -33,6 +33,40 @@ function showFilePreview(filename, filetype, filepath) {
     });
 }
 
+// Additional function to handle popup previews
+function openMaterialInPopup(url) {
+    // Create modal overlay for popup
+    const modal = document.createElement('div');
+    modal.className = 'file-preview-modal';
+    modal.innerHTML = `
+        <div class="file-preview-content" style="width: 90%; height: 90%;">
+            <div class="file-preview-header">
+                <h3>Просмотр материала</h3>
+                <button class="close-preview">&times;</button>
+            </div>
+            <div class="file-preview-body" style="height: calc(100% - 100px); overflow: auto;">
+                <iframe src="${url}" width="100%" height="100%" style="border: none;"></iframe>
+            </div>
+            <div class="file-preview-footer">
+                <button class="btn-close-preview">Закрыть</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking close buttons
+    modal.querySelector('.close-preview').addEventListener('click', closeModal);
+    modal.querySelector('.btn-close-preview').addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside the content
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+}
+
 function getFilePreviewElement(filename, filetype, filepath) {
     const extension = filename.split('.').pop().toLowerCase();
     
