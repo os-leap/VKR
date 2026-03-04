@@ -1045,10 +1045,22 @@ def uploaded_file(filename):
     from werkzeug.utils import secure_filename
     safe_filename = secure_filename(filename)
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_filename)
+    
+    # Определяем MIME тип на основе расширения файла
+    import mimetypes
+    mime_type, _ = mimetypes.guess_type(file_path)
+    
     try:
         if not os.path.isfile(file_path):
             return "Файл не найден", 404
-        return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+        
+        # Отправляем файл с правильным Content-Type для предварительного просмотра
+        return send_from_directory(
+            app.config["UPLOAD_FOLDER"], 
+            filename, 
+            as_attachment=False,  # Позволяет браузеру отображать файлы для предварительного просмотра
+            mimetype=mime_type   # Устанавливаем правильный MIME тип для корректного отображения
+        )
     except FileNotFoundError:
         return "Файл не найден", 404
     except Exception as e:
