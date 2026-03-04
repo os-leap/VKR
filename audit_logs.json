@@ -368,5 +368,163 @@
         "details": "Добавлена новая запись в теме 'д/з'",
         "entry_id": null,
         "backup_id": null
+    },
+    {
+        "id": "1772512194.236728",
+        "timestamp": "2026-03-03T09:29:54.236728",
+        "username": "admin",
+        "action_type": "add_user",
+        "target": "user2",
+        "details": "Создан пользователь с ролью user",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772512203.593884",
+        "timestamp": "2026-03-03T09:30:03.593884",
+        "username": "admin",
+        "action_type": "add_user",
+        "target": "user3",
+        "details": "Создан пользователь с ролью user",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772512212.148763",
+        "timestamp": "2026-03-03T09:30:12.148763",
+        "username": "admin",
+        "action_type": "add_user",
+        "target": "user6",
+        "details": "Создан пользователь с ролью user",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772514188.459386",
+        "timestamp": "2026-03-03T10:03:08.459386",
+        "username": "user2",
+        "action_type": "add",
+        "target": "Русский язык пояснения к заданию для 3 класса",
+        "details": "Добавлена новая запись в теме 'д/з' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772514501.110253",
+        "timestamp": "2026-03-03T10:08:21.110253",
+        "username": "user2",
+        "action_type": "add",
+        "target": "Литература для 5 -9 классов для летних каникул",
+        "details": "Добавлена новая запись в теме 'другое' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772514646.746461",
+        "timestamp": "2026-03-03T10:10:46.746461",
+        "username": "user2",
+        "action_type": "add",
+        "target": "Программа для старших классов 10-11 класс",
+        "details": "Добавлена новая запись в теме 'другое' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772515347.271512",
+        "timestamp": "2026-03-03T10:22:27.271512",
+        "username": "user3",
+        "action_type": "add",
+        "target": "Изучение темы: Шкалы и координаты",
+        "details": "Добавлена новая запись в теме 'другое' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772515477.69663",
+        "timestamp": "2026-03-03T10:24:37.696630",
+        "username": "user3",
+        "action_type": "add",
+        "target": "подготовка к ОГЭ",
+        "details": "Добавлена новая запись в теме 'контрольные' с 2 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772516069.138942",
+        "timestamp": "2026-03-03T10:34:29.138942",
+        "username": "user3",
+        "action_type": "add",
+        "target": "Быстрый экскурс для 6 класса после летних каникул",
+        "details": "Добавлена новая запись в теме 'д/з' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772516490.450884",
+        "timestamp": "2026-03-03T10:41:30.450884",
+        "username": "user6",
+        "action_type": "add",
+        "target": "проведение воспитательных работ у младше классников",
+        "details": "Добавлена новая запись в теме 'разговоры о важном' с 1 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772517258.032157",
+        "timestamp": "2026-03-03T10:54:18.032157",
+        "username": "user6",
+        "action_type": "add",
+        "target": "Контрольная работа для подготовке к ВПР",
+        "details": "Добавлена новая запись в теме 'контрольные' с 2 файлами",
+        "entry_id": null,
+        "backup_id": null
+    },
+    {
+        "id": "1772517705.107195",
+        "timestamp": "2026-03-03T11:01:45.107195",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "Пример записи",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "id": "1772517709.931095",
+        "timestamp": "2026-03-03T11:01:49.931095",
+        "username": "admin",
+        "action_type": "delete",
+        "target": "aaaa",
+        "details": "Удалена запись из базы знаний",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": null,
+        "new_value": null
+    },
+    {
+        "id": "1772517802.705167",
+        "timestamp": "2026-03-03T11:03:22.705167",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "Программа для старших классов 10-11 класс",
+        "details": "Изменение записи",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": "Программа курса «Русский язык» для 10–11 классов общеобразовательных учреждений. Программа соответст...",
+        "new_value": "Программа курса «Русский язык» для 10–11 классов общеобразовательных учреждений. \r\nПрограмма соответ..."
+    },
+    {
+        "id": "1772517939.340015",
+        "timestamp": "2026-03-03T11:05:39.340015",
+        "username": "admin",
+        "action_type": "edit",
+        "target": "Федеральный закон от 19.12.2023 № 618-ФЗ «О внесении изменений в Федеральный закон «Об образовании в Российской Федерации»",
+        "details": "Изменение записи",
+        "entry_id": null,
+        "backup_id": null,
+        "old_value": "фвывыфывф3",
+        "new_value": "изменения от 19.12.2023"
     }
 ]

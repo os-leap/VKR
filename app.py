@@ -908,8 +908,19 @@ def view_entry(id):
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
     try:
-        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
-        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+        # Найти материал по оригинальному ID из базы данных
+        target_material = None
+        for material in enhanced_search_system.materials:
+            if material.original_id == entry.get("id"):
+                target_material = material
+                break
+        
+        if target_material:
+            similar_materials = enhanced_search_system.find_similar_materials(target_material.id, limit=5)
+        else:
+            # Если не найден, используем старую логику
+            material_id = int(hash(entry.get("title", "") + str(entry.get("education_info", {}).get("class", "")) + entry.get("subject", "общее")) % 10000)
+            similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
     except Exception as e:
         print(f"Error finding similar materials: {e}")
         similar_materials = []
@@ -1079,6 +1090,7 @@ def search_entry_get():
     data = load_data()
 
     results = []
+    pdf_docs_results = []
     
     # Извлекаем параметры фильтрации из поискового запроса
     extracted_class, extracted_subject = extract_filters_from_query(query)
@@ -1135,6 +1147,7 @@ def search_entry_get():
         
         # Поиск в pdf_documents.json
         search_in_pdf_docs = False
+        pdf_docs_results = []
         try:
             with open('pdf_documents.json', 'r', encoding='utf-8') as f:
                 pdf_documents = json.load(f)
@@ -1149,32 +1162,52 @@ def search_entry_get():
                 query_lower = query.lower()
                 if query_lower in doc_title or query_lower in doc_filename or query_lower in doc_extracted_title:
                     search_in_pdf_docs = True
-                    break
+                    pdf_docs_results.append(doc)
+                    continue  # Добавляем документ в результаты
                 
                 # Также проверяем через синтаксический поиск
                 doc_text = f"{doc_title} {doc_filename} {doc_extracted_title}"
                 if syntax_aware_search(doc_text, query):
                     search_in_pdf_docs = True
-                    break
+                    pdf_docs_results.append(doc)
+                    continue
         except FileNotFoundError:
             search_in_pdf_docs = False
+            pdf_docs_results = []
         except Exception as e:
             print(f"Ошибка при поиске в pdf_documents.json: {e}")
             search_in_pdf_docs = False
+            pdf_docs_results = []
 
         if search_in_title or search_in_content or search_in_files or search_in_fgoss or search_in_pdf_docs:
             results.append(entry)
     
     # Если синтаксический поиск не дал результатов, выполняем семантический поиск
-    if not results:
+    if not results and not pdf_docs_results:
         results = perform_integrated_search(query, search_type="semantic", top_k=20)
+    elif pdf_docs_results:
+        # Добавляем найденные документы из pdf_documents.json к результатам
+        for doc in pdf_docs_results:
+            # Преобразуем документ в формат, подходящий для отображения в шаблоне
+            formatted_doc = {
+                "id": f"pdf_{doc.get('id', '')}",
+                "title": doc.get('title', ''),
+                "content": doc.get('extracted_title', ''),
+                "topic": "Нормативные документы",
+                "created_at": doc.get('download_date', ''),
+                "updated_at": doc.get('download_date', ''),
+                "author": "Система",
+                "file": doc.get('filename', ''),
+                "url": doc.get('url', '')
+            }
+            results.append(formatted_doc)
 
     # Получаем статистику по темам
     topic_stats = filter_manager.get_topic_statistics()
 
     return render_template("index.html", entries=results, is_search=True, format_date=format_date, query=query,
                            topics=filter_manager.get_unique_topics(), selected_topic=selected_topic,
-                           search_query=query, topic_stats=topic_stats)
+                           search_query=query, topic_stats=topic_stats, pdf_documents=pdf_docs_results)
 
 
 def extract_filters_from_query(query):
@@ -1344,8 +1377,19 @@ def view_entry_by_id(entry_id):
     # Initialize enhanced search system and find similar materials
     enhanced_search_system = initialize_enhanced_search_system(data)
     try:
-        material_id = int(hash(entry.get('title', '') + str(entry.get('education_info', {}).get('class', '')) + entry.get('subject', 'общее')) % 10000)
-        similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
+        # Найти материал по оригинальному ID из базы данных
+        target_material = None
+        for material in enhanced_search_system.materials:
+            if material.original_id == entry.get("id"):
+                target_material = material
+                break
+        
+        if target_material:
+            similar_materials = enhanced_search_system.find_similar_materials(target_material.id, limit=5)
+        else:
+            # Если не найден, используем старую логику
+            material_id = int(hash(entry.get("title", "") + str(entry.get("education_info", {}).get("class", "")) + entry.get("subject", "общее")) % 10000)
+            similar_materials = enhanced_search_system.find_similar_materials(material_id, limit=5)
     except Exception as e:
         print(f"Error finding similar materials: {e}")
         similar_materials = []
