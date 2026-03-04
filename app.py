@@ -1063,9 +1063,9 @@ def uploaded_file(filename):
         
         # For PDF files, set headers to allow inline viewing in browser
         if filename.lower().endswith('.pdf'):
-            return send_file(file_path, mimetype='application/pdf', as_attachment=False)
+            return send_file(file_path, mimetype='application/pdf', as_attachment=False, download_name=filename)
         else:
-            return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+            return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
     except FileNotFoundError:
         return "Файл не найден", 404
     except Exception as e:
