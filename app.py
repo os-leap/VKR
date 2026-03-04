@@ -1055,6 +1055,22 @@ def uploaded_file(filename):
         return f"Произошла ошибка: {e}", 500
 
 
+@app.route("/view_file/<filename>")
+def view_file(filename):
+    from werkzeug.utils import secure_filename
+    safe_filename = secure_filename(filename)
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_filename)
+    try:
+        if not os.path.isfile(file_path):
+            return "Файл не найден", 404
+        # Возвращаем файл для предварительного просмотра в браузере
+        return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=False)
+    except FileNotFoundError:
+        return "Файл не найден", 404
+    except Exception as e:
+        return f"Произошла ошибка: {e}", 500
+
+
 @app.route("/search", methods=["POST"])
 def search_entry():
     query = request.form.get("query", "").strip()
